@@ -178,6 +178,7 @@
   margin-bottom: 2px;
   background: #fff;
   transition: background 0.15s;
+  position: relative;
 }
 
 .lap-item:hover {
@@ -264,9 +265,11 @@
 }
 
 .expected-duration {
+  position: absolute;
+  right: 100%;
+  margin-right: 0.5rem;
   color: #a78bfa;
   font-size: 0.75rem;
-  margin-left: auto;
   white-space: nowrap;
 }
 
