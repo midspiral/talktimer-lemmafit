@@ -184,7 +184,7 @@ function App() {
   const startPractice = () => {
     const labels = model.laps
       .filter(lap => lap.section !== '')
-      .map(lap => ({ section: lap.section, expectedDuration: lap.duration }))
+      .map(lap => ({ section: lap.section, expectedDuration: lap.duration, tags: lap.tags }))
     if (labels.length === 0) return
     setRunning(false)
     setStartTime(null)

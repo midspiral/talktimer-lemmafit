@@ -363,6 +363,19 @@
       "line": 418
     },
     {
+      "name": "ConsumeTemplateSetsTags",
+      "module": "TalkTimer",
+      "requires": [
+        "Inv(m)",
+        "|m.template| > 0",
+        "|m.laps| > 0"
+      ],
+      "ensures": [
+        "Apply(m, ConsumeTemplate).laps[|m.laps| - 1].tags == m.template[0].tags"
+      ],
+      "line": 427
+    },
+    {
       "name": "ConsumeTemplateSelectsLap",
       "module": "TalkTimer",
       "requires": [
@@ -373,7 +386,7 @@
       "ensures": [
         "Apply(m, ConsumeTemplate).laps[|m.laps| - 1].selected == true"
       ],
-      "line": 427
+      "line": 435
     },
     {
       "name": "ConsumeTemplateDecreasesQueue",
@@ -386,7 +399,7 @@
       "ensures": [
         "|Apply(m, ConsumeTemplate).template| == |m.template| - 1"
       ],
-      "line": 435
+      "line": 443
     },
     {
       "name": "ImportPreservesExisting",
@@ -397,7 +410,7 @@
       "ensures": [
         "forall i: int {:trigger m.laps[i]} {:trigger Apply(m, ImportLaps(laps)).laps[i]} | 0 <= i < |m.laps| :: Apply(m, ImportLaps(laps)).laps[i] == m.laps[i]"
       ],
-      "line": 447
+      "line": 455
     },
     {
       "name": "ImportAppendsToEnd",
@@ -408,7 +421,7 @@
       "ensures": [
         "|Apply(m, ImportLaps(laps)).laps| == |m.laps| + |ClampLaps(laps)|"
       ],
-      "line": 454
+      "line": 462
     },
     {
       "name": "SumOfNonNegativeIsNonNegative",
@@ -419,7 +432,7 @@
       "ensures": [
         "Sum(s) >= 0"
       ],
-      "line": 470
+      "line": 478
     },
     {
       "name": "SelectedTotalIsNonNegative",
@@ -430,7 +443,7 @@
       "ensures": [
         "Sum(durations) >= 0"
       ],
-      "line": 481
+      "line": 489
     },
     {
       "name": "InitSatisfiesInv",
@@ -772,7 +785,7 @@
       "ensures": [
         "|s| == 0 ==> Sum(s) == 0"
       ],
-      "line": 463
+      "line": 471
     },
     {
       "name": "Apply",

@@ -16,7 +16,7 @@ module TalkTimer refines Domain {
   )
 
   // Template entry for practice mode
-  datatype TemplateEntry = TemplateEntry(section: string, expectedDuration: int)
+  datatype TemplateEntry = TemplateEntry(section: string, expectedDuration: int, tags: seq<string>)
 
   // The timer state
   datatype Model = Model(
@@ -232,12 +232,12 @@ module TalkTimer refines Domain {
         Model(m.currentTime, m.lastLapTime, m.laps, labels)
 
       case ConsumeTemplate =>
-        // Label last lap from template and select it, set expected duration
+        // Label last lap from template and select it, set expected duration and tags
         if |m.template| > 0 && |m.laps| > 0 then
           var idx := |m.laps| - 1;
           var entry := m.template[0];
           var expectedDur := if entry.expectedDuration >= 0 then entry.expectedDuration else -1;
-          var newLaps := m.laps[idx := m.laps[idx].(section := entry.section, selected := true, expectedDuration := expectedDur)];
+          var newLaps := m.laps[idx := m.laps[idx].(section := entry.section, selected := true, expectedDuration := expectedDur, tags := entry.tags)];
           Model(m.currentTime, m.lastLapTime, newLaps, m.template[1..])
         else
           m
@@ -421,6 +421,14 @@ module TalkTimer refines Domain {
     requires |m.laps| > 0
     requires m.template[0].expectedDuration >= 0
     ensures Apply(m, ConsumeTemplate).laps[|m.laps|-1].expectedDuration == m.template[0].expectedDuration
+  {}
+
+  // [verified] Consuming template sets the lap's tags
+  lemma ConsumeTemplateSetsTags(m: Model)
+    requires Inv(m)
+    requires |m.template| > 0
+    requires |m.laps| > 0
+    ensures Apply(m, ConsumeTemplate).laps[|m.laps|-1].tags == m.template[0].tags
   {}
 
   // [verified] Consuming template selects the lap

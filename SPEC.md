@@ -35,6 +35,7 @@ A talk rehearsal timer that tracks lap times, organizes takes by section, and co
 - [verified] Each lap in practice mode consumes one template entry
 - [verified] Consumed template entry sets the lap's section label
 - [verified] Consumed template entry sets the lap's expected duration
+- [verified] Consumed template entry sets the lap's tags
 - [verified] Template queue length decreases by one after consumption
 
 ## Feature: Import/Export

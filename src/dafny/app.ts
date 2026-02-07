@@ -68,6 +68,7 @@ export interface Lap {
 export interface TemplateEntry {
   section: string;
   expectedDuration: number;
+  tags: string[];
 }
 
 export interface Model {
@@ -134,6 +135,7 @@ interface DafnyTemplateEntry {
   readonly is_TemplateEntry: true;
   readonly dtor_section: DafnySeq;
   readonly dtor_expectedDuration: DafnyInt;
+  readonly dtor_tags: DafnySeq<DafnySeq>;
 }
 
 interface DafnyModel {
@@ -185,7 +187,8 @@ const lapToJson = (value: any): Lap => {
 const templateentryFromJson = (json: any): DafnyTemplateEntry => {
   return TalkTimer.TemplateEntry.create_TemplateEntry(
     _dafny.Seq.UnicodeFromString(json.section),
-    new BigNumber(json.expectedDuration)
+    new BigNumber(json.expectedDuration),
+    _dafny.Seq.of(...(json.tags || []).map((x: any) => _dafny.Seq.UnicodeFromString(x)))
   );
 };
 
@@ -193,7 +196,8 @@ const templateentryFromJson = (json: any): DafnyTemplateEntry => {
 const templateentryToJson = (value: any): TemplateEntry => {
   return {
     section: dafnyStringToJs(value.dtor_section),
-    expectedDuration: toNumber(value.dtor_expectedDuration)
+    expectedDuration: toNumber(value.dtor_expectedDuration),
+    tags: seqToArray(value.dtor_tags).map((x: any) => dafnyStringToJs(x))
   };
 };
 
@@ -393,7 +397,7 @@ const App = {
   Lap: (timestamp: number, duration: number, section: string, selected: boolean, expectedDuration: number, tags: string[]) => TalkTimer.Lap.create_Lap(new BigNumber(timestamp), new BigNumber(duration), _dafny.Seq.UnicodeFromString(section), selected, new BigNumber(expectedDuration), _dafny.Seq.of(...(tags || []).map((x: any) => _dafny.Seq.UnicodeFromString(x)))),
 
   // TemplateEntry constructors
-  TemplateEntry: (section: string, expectedDuration: number) => TalkTimer.TemplateEntry.create_TemplateEntry(_dafny.Seq.UnicodeFromString(section), new BigNumber(expectedDuration)),
+  TemplateEntry: (section: string, expectedDuration: number, tags: string[]) => TalkTimer.TemplateEntry.create_TemplateEntry(_dafny.Seq.UnicodeFromString(section), new BigNumber(expectedDuration), _dafny.Seq.of(...(tags || []).map((x: any) => _dafny.Seq.UnicodeFromString(x)))),
 
   // Action constructors
   SetTime: (ms: number) => TalkTimer.Action.create_SetTime(new BigNumber(ms)),
