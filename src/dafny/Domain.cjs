@@ -1196,6 +1196,22 @@ let TalkTimer = (function() {
     _parentTraits() {
       return [];
     }
+    static ClampLap(lap) {
+      return TalkTimer.Lap.create_Lap((((_dafny.ZERO).isLessThanOrEqualTo((lap).dtor_timestamp)) ? ((lap).dtor_timestamp) : (_dafny.ZERO)), (((_dafny.ZERO).isLessThanOrEqualTo((lap).dtor_duration)) ? ((lap).dtor_duration) : (_dafny.ZERO)), (lap).dtor_section, (lap).dtor_selected, (((new BigNumber(-1)).isLessThanOrEqualTo((lap).dtor_expectedDuration)) ? ((lap).dtor_expectedDuration) : (new BigNumber(-1))));
+    };
+    static ClampLaps(laps) {
+      let _0___accumulator = _dafny.Seq.of();
+      TAIL_CALL_START: while (true) {
+        if ((new BigNumber((laps).length)).isEqualTo(_dafny.ZERO)) {
+          return _dafny.Seq.Concat(_0___accumulator, _dafny.Seq.of());
+        } else {
+          _0___accumulator = _dafny.Seq.Concat(_0___accumulator, _dafny.Seq.of(TalkTimer.__default.ClampLap((laps)[_dafny.ZERO])));
+          let _in0 = (laps).slice(_dafny.ONE);
+          laps = _in0;
+          continue TAIL_CALL_START;
+        }
+      }
+    };
     static Init() {
       return TalkTimer.Model.create_Model(_dafny.ZERO, _dafny.ZERO, _dafny.Seq.of(), _dafny.Seq.of());
     };
@@ -1340,6 +1356,13 @@ let TalkTimer = (function() {
           } else {
             return m;
           }
+        }
+      }
+      {
+        if (_source0.is_ImportLaps) {
+          let _28_laps = (_source0).laps;
+          let _29_validLaps = TalkTimer.__default.ClampLaps(_28_laps);
+          return TalkTimer.Model.create_Model((m).dtor_currentTime, (m).dtor_lastLapTime, _dafny.Seq.Concat((m).dtor_laps, _29_validLaps), (m).dtor_template);
         }
       }
       {
@@ -1551,8 +1574,13 @@ let TalkTimer = (function() {
       let $dt = new Action(9);
       return $dt;
     }
-    static create_Reset() {
+    static create_ImportLaps(laps) {
       let $dt = new Action(10);
+      $dt.laps = laps;
+      return $dt;
+    }
+    static create_Reset() {
+      let $dt = new Action(11);
       return $dt;
     }
     get is_SetTime() { return this.$tag === 0; }
@@ -1565,12 +1593,14 @@ let TalkTimer = (function() {
     get is_MoveDown() { return this.$tag === 7; }
     get is_SetTemplate() { return this.$tag === 8; }
     get is_ConsumeTemplate() { return this.$tag === 9; }
-    get is_Reset() { return this.$tag === 10; }
+    get is_ImportLaps() { return this.$tag === 10; }
+    get is_Reset() { return this.$tag === 11; }
     get dtor_ms() { return this.ms; }
     get dtor_idx() { return this.idx; }
     get dtor_name() { return this.name; }
     get dtor_duration() { return this.duration; }
     get dtor_labels() { return this.labels; }
+    get dtor_laps() { return this.laps; }
     toString() {
       if (this.$tag === 0) {
         return "TalkTimer.Action.SetTime" + "(" + _dafny.toString(this.ms) + ")";
@@ -1593,6 +1623,8 @@ let TalkTimer = (function() {
       } else if (this.$tag === 9) {
         return "TalkTimer.Action.ConsumeTemplate";
       } else if (this.$tag === 10) {
+        return "TalkTimer.Action.ImportLaps" + "(" + _dafny.toString(this.laps) + ")";
+      } else if (this.$tag === 11) {
         return "TalkTimer.Action.Reset";
       } else  {
         return "<unexpected>";
@@ -1622,7 +1654,9 @@ let TalkTimer = (function() {
       } else if (this.$tag === 9) {
         return other.$tag === 9;
       } else if (this.$tag === 10) {
-        return other.$tag === 10;
+        return other.$tag === 10 && _dafny.areEqual(this.laps, other.laps);
+      } else if (this.$tag === 11) {
+        return other.$tag === 11;
       } else  {
         return false; // unexpected
       }

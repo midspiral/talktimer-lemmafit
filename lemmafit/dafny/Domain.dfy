@@ -37,7 +37,35 @@ module TalkTimer refines Domain {
     | MoveDown(idx: int)                    // move lap down (swap with next)
     | SetTemplate(labels: seq<TemplateEntry>)  // set practice template queue
     | ConsumeTemplate                       // label last lap from template, select it
+    | ImportLaps(laps: seq<Lap>)            // import multiple laps at once
     | Reset                                 // clear all laps
+
+  //----------------------------------------------------------------------
+  // Helpers
+  //----------------------------------------------------------------------
+
+  function ClampLap(lap: Lap): Lap
+    ensures ClampLap(lap).timestamp >= 0
+    ensures ClampLap(lap).duration >= 0
+    ensures ClampLap(lap).expectedDuration >= -1
+  {
+    Lap(
+      if lap.timestamp >= 0 then lap.timestamp else 0,
+      if lap.duration >= 0 then lap.duration else 0,
+      lap.section,
+      lap.selected,
+      if lap.expectedDuration >= -1 then lap.expectedDuration else -1
+    )
+  }
+
+  function ClampLaps(laps: seq<Lap>): seq<Lap>
+    ensures |ClampLaps(laps)| == |laps|
+    ensures forall i | 0 <= i < |laps| :: ClampLaps(laps)[i] == ClampLap(laps[i])
+    ensures LapsValid(ClampLaps(laps))
+  {
+    if |laps| == 0 then []
+    else [ClampLap(laps[0])] + ClampLaps(laps[1..])
+  }
 
   //----------------------------------------------------------------------
   // Invariants
@@ -137,6 +165,12 @@ module TalkTimer refines Domain {
           Model(m.currentTime, m.lastLapTime, newLaps, m.template[1..])
         else
           m
+
+      case ImportLaps(laps) =>
+        // Import multiple laps at once (for paste import)
+        // Clamp values to ensure validity
+        var validLaps := ClampLaps(laps);
+        Model(m.currentTime, m.lastLapTime, m.laps + validLaps, m.template)
 
       case Reset =>
         // Clear all laps, reset lastLapTime to current time, clear template

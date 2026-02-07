@@ -229,33 +229,16 @@ function App() {
     const parsed = parseMarkdown(text)
     if (parsed.length === 0) return
 
-    setDafnyHistory((h: DafnyHistory) => {
-      let currentHistory = h
-      const startIdx = Api.historyToJson(currentHistory).present.laps.length
+    // Create lap objects for import
+    const laps = parsed.map(({ section, duration }) => ({
+      timestamp: 0,
+      duration,
+      section,
+      selected: true,
+      expectedDuration: -1
+    }))
 
-      // Create all laps first
-      for (let i = 0; i < parsed.length; i++) {
-        const createAction = Api.actionFromJson({ type: 'CreateLap' })
-        currentHistory = Api.Do(currentHistory, createAction)
-      }
-
-      // Then adjust duration, label, and select each
-      for (let i = 0; i < parsed.length; i++) {
-        const idx = startIdx + i
-        const { section, duration } = parsed[i]
-
-        const adjustAction = Api.actionFromJson({ type: 'AdjustDuration', idx, duration })
-        currentHistory = Api.Do(currentHistory, adjustAction)
-
-        const labelAction = Api.actionFromJson({ type: 'LabelLap', idx, name: section })
-        currentHistory = Api.Do(currentHistory, labelAction)
-
-        const selectAction = Api.actionFromJson({ type: 'SelectLap', idx })
-        currentHistory = Api.Do(currentHistory, selectAction)
-      }
-
-      return currentHistory
-    })
+    dispatch({ type: 'ImportLaps', laps })
   }
 
   // Start editing a lap label
