@@ -21,6 +21,28 @@ A talk rehearsal timer that tracks lap times, organizes takes by section, and co
 - [verified] Users can manually adjust the duration of any take
 - [verified] Total estimated talk duration is computed by summing the selected takes
 
+## Feature: Lap Reordering
+
+- [verified] Moving a lap up swaps it with the previous lap
+- [verified] Moving a lap down swaps it with the next lap
+- [verified] Moving preserves all lap data (duration, label, selection, expected)
+- [verified] Moving the first lap up has no effect
+- [verified] Moving the last lap down has no effect
+
+## Feature: Practice Mode
+
+- [verified] Starting practice captures section labels as a template queue
+- [verified] Each lap in practice mode consumes one template entry
+- [verified] Consumed template entry sets the lap's section label
+- [verified] Consumed template entry sets the lap's expected duration
+- [verified] Template queue length decreases by one after consumption
+
+## Feature: Import/Export
+
+- [verified] Importing laps preserves existing laps
+- [verified] Imported laps are appended to the end of the lap list
+- [verified] Import is atomic (single undo removes all imported laps)
+
 ## Feature: Undo/Redo System
 
 - [verified] All lap, label, select, and delete actions support undo and redo operations

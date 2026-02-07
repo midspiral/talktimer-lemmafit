@@ -16,8 +16,8 @@
   },
   "axioms": [],
   "compiled": true,
-  "lastCompiled": "2026-02-07T03:19:00.109Z",
-  "specContent": "# Talk Timer Specification\n\nA talk rehearsal timer that tracks lap times, organizes takes by section, and computes optimal talk duration.\n\n## Feature: Timer Core Logic\n\n- [verified] Timer displays elapsed time in minutes and seconds format (MM:SS)\n- [verified] A single tap or keypress creates a lap marker at the current elapsed time\n- [verified] Each lap records the duration from the previous lap marker (or start) to the current marker\n\n## Feature: Session Data Model\n\n- [verified] Sessions are organized hierarchically: a Talk contains Sections, each Section contains one or more Takes\n- [verified] Each lap can be labeled with a section name after it is recorded\n- [verified] All takes are preserved with their timestamps and durations\n\n## Feature: Take Selection & Assembly\n\n- [verified] Users can manually select which takes to include in the final talk total\n- [verified] Users can delete unwanted or noisy takes (without affecting other takes' durations)\n- [verified] Users can manually adjust the duration of any take\n- [verified] Total estimated talk duration is computed by summing the selected takes\n\n## Feature: Undo/Redo System\n\n- [verified] All lap, label, select, and delete actions support undo and redo operations\n- [verified] The undo/redo stack preserves complete action history for the session\n\n## Feature: User Interface\n\n- [trusted] The app provides a translucent overlay mode that stays visible but unobtrusive during rehearsal\n- [trusted] Visual design uses soft muted colors for minimal distraction\n- [trusted] A soft visual indicator shows progress toward a target talk duration when set\n- [trusted] Sessions can be exported as Markdown summaries\n\n## Feature: Keyboard & Accessibility\n\n- [trusted] All primary functions are accessible via keyboard shortcuts for hands-free operation\n- [trusted] The app can be quickly shown and hidden during rehearsal\n",
+  "lastCompiled": "2026-02-07T03:22:02.259Z",
+  "specContent": "# Talk Timer Specification\n\nA talk rehearsal timer that tracks lap times, organizes takes by section, and computes optimal talk duration.\n\n## Feature: Timer Core Logic\n\n- [verified] Timer displays elapsed time in minutes and seconds format (MM:SS)\n- [verified] A single tap or keypress creates a lap marker at the current elapsed time\n- [verified] Each lap records the duration from the previous lap marker (or start) to the current marker\n\n## Feature: Session Data Model\n\n- [verified] Sessions are organized hierarchically: a Talk contains Sections, each Section contains one or more Takes\n- [verified] Each lap can be labeled with a section name after it is recorded\n- [verified] All takes are preserved with their timestamps and durations\n\n## Feature: Take Selection & Assembly\n\n- [verified] Users can manually select which takes to include in the final talk total\n- [verified] Users can delete unwanted or noisy takes (without affecting other takes' durations)\n- [verified] Users can manually adjust the duration of any take\n- [verified] Total estimated talk duration is computed by summing the selected takes\n\n## Feature: Lap Reordering\n\n- [verified] Moving a lap up swaps it with the previous lap\n- [verified] Moving a lap down swaps it with the next lap\n- [verified] Moving preserves all lap data (duration, label, selection, expected)\n- [verified] Moving the first lap up has no effect\n- [verified] Moving the last lap down has no effect\n\n## Feature: Practice Mode\n\n- [verified] Starting practice captures section labels as a template queue\n- [verified] Each lap in practice mode consumes one template entry\n- [verified] Consumed template entry sets the lap's section label\n- [verified] Consumed template entry sets the lap's expected duration\n- [verified] Template queue length decreases by one after consumption\n\n## Feature: Import/Export\n\n- [verified] Importing laps preserves existing laps\n- [verified] Imported laps are appended to the end of the lap list\n- [verified] Import is atomic (single undo removes all imported laps)\n\n## Feature: Undo/Redo System\n\n- [verified] All lap, label, select, and delete actions support undo and redo operations\n- [verified] The undo/redo stack preserves complete action history for the session\n\n## Feature: User Interface\n\n- [trusted] The app provides a translucent overlay mode that stays visible but unobtrusive during rehearsal\n- [trusted] Visual design uses soft muted colors for minimal distraction\n- [trusted] A soft visual indicator shows progress toward a target talk duration when set\n- [trusted] Sessions can be exported as Markdown summaries\n\n## Feature: Keyboard & Accessibility\n\n- [trusted] All primary functions are accessible via keyboard shortcuts for hands-free operation\n- [trusted] The app can be quickly shown and hidden during rehearsal\n",
   "ackedSpecContent": "# Talk Timer Specification\n\nA talk rehearsal timer that tracks lap times, organizes takes by section, and computes optimal talk duration.\n\n## Feature: Timer Core Logic\n\n- [verified] Timer displays elapsed time in minutes and seconds format (MM:SS)\n- [verified] A single tap or keypress creates a lap marker at the current elapsed time\n- [verified] Each lap records the duration from the previous lap marker (or start) to the current marker\n\n## Feature: Session Data Model\n\n- [verified] Sessions are organized hierarchically: a Talk contains Sections, each Section contains one or more Takes\n- [verified] Each lap can be labeled with a section name after it is recorded\n- [verified] All takes are preserved with their timestamps and durations\n\n## Feature: Take Selection & Assembly\n\n- [verified] Users can manually select which takes to include in the final talk total\n- [verified] Users can delete unwanted or noisy takes\n- [verified] Total estimated talk duration is computed by summing the selected takes\n\n## Feature: Undo/Redo System\n\n- [verified] All lap, label, select, and delete actions support undo and redo operations\n- [verified] The undo/redo stack preserves complete action history for the session\n\n## Feature: User Interface\n\n- [trusted] The app provides a translucent overlay mode that stays visible but unobtrusive during rehearsal\n- [trusted] Visual design uses soft muted colors for minimal distraction\n- [trusted] A soft visual indicator shows progress toward a target talk duration when set\n- [trusted] Sessions can be exported as Markdown summaries\n\n## Feature: Keyboard & Accessibility\n\n- [trusted] All primary functions are accessible via keyboard shortcuts for hands-free operation\n- [trusted] The app can be quickly shown and hidden during rehearsal\n",
   "specQueue": [
     {
@@ -49,11 +49,11 @@
       "text": ""
     },
     {
-      "id": "88b502a3",
+      "id": "06427d0e",
       "line": 24,
       "type": "changed",
       "old": "",
-      "text": "## Feature: Undo/Redo System"
+      "text": "## Feature: Lap Reordering"
     },
     {
       "id": "2ba9010d",
@@ -63,109 +63,234 @@
       "text": ""
     },
     {
-      "id": "3c70a9e3",
+      "id": "27bf542b",
       "line": 26,
       "type": "changed",
       "old": "- [verified] The undo/redo stack preserves complete action history for the session",
-      "text": "- [verified] All lap, label, select, and delete actions support undo and redo operations"
+      "text": "- [verified] Moving a lap up swaps it with the previous lap"
     },
     {
-      "id": "060981e6",
+      "id": "38b424fb",
       "line": 27,
       "type": "changed",
       "old": "",
-      "text": "- [verified] The undo/redo stack preserves complete action history for the session"
+      "text": "- [verified] Moving a lap down swaps it with the next lap"
     },
     {
-      "id": "953d3066",
+      "id": "4bb417e3",
       "line": 28,
       "type": "changed",
       "old": "## Feature: User Interface",
-      "text": ""
+      "text": "- [verified] Moving preserves all lap data (duration, label, selection, expected)"
     },
     {
-      "id": "3f43cb03",
+      "id": "f2335f67",
       "line": 29,
       "type": "changed",
       "old": "",
-      "text": "## Feature: User Interface"
+      "text": "- [verified] Moving the first lap up has no effect"
     },
     {
-      "id": "34075af3",
+      "id": "e2c4dd21",
       "line": 30,
       "type": "changed",
       "old": "- [trusted] The app provides a translucent overlay mode that stays visible but unobtrusive during rehearsal",
-      "text": ""
+      "text": "- [verified] Moving the last lap down has no effect"
     },
     {
-      "id": "baae817b",
+      "id": "56782b3e",
       "line": 31,
       "type": "changed",
       "old": "- [trusted] Visual design uses soft muted colors for minimal distraction",
-      "text": "- [trusted] The app provides a translucent overlay mode that stays visible but unobtrusive during rehearsal"
+      "text": ""
     },
     {
-      "id": "d948dc4a",
+      "id": "266a422e",
       "line": 32,
       "type": "changed",
       "old": "- [trusted] A soft visual indicator shows progress toward a target talk duration when set",
-      "text": "- [trusted] Visual design uses soft muted colors for minimal distraction"
+      "text": "## Feature: Practice Mode"
     },
     {
-      "id": "14bec24c",
+      "id": "af1274ce",
       "line": 33,
       "type": "changed",
       "old": "- [trusted] Sessions can be exported as Markdown summaries",
-      "text": "- [trusted] A soft visual indicator shows progress toward a target talk duration when set"
+      "text": ""
     },
     {
-      "id": "51b32186",
+      "id": "0261b2ff",
       "line": 34,
       "type": "changed",
       "old": "",
-      "text": "- [trusted] Sessions can be exported as Markdown summaries"
+      "text": "- [verified] Starting practice captures section labels as a template queue"
     },
     {
-      "id": "1a9772ee",
+      "id": "9b1cd6e1",
       "line": 35,
       "type": "changed",
       "old": "## Feature: Keyboard & Accessibility",
-      "text": ""
+      "text": "- [verified] Each lap in practice mode consumes one template entry"
     },
     {
-      "id": "f3bc6d50",
+      "id": "6ca2b229",
       "line": 36,
       "type": "changed",
       "old": "",
-      "text": "## Feature: Keyboard & Accessibility"
+      "text": "- [verified] Consumed template entry sets the lap's section label"
     },
     {
-      "id": "0d915e34",
+      "id": "ccf604d7",
       "line": 37,
       "type": "changed",
       "old": "- [trusted] All primary functions are accessible via keyboard shortcuts for hands-free operation",
-      "text": ""
+      "text": "- [verified] Consumed template entry sets the lap's expected duration"
     },
     {
-      "id": "3a584cee",
+      "id": "ad3e2367",
       "line": 38,
       "type": "changed",
       "old": "- [trusted] The app can be quickly shown and hidden during rehearsal",
+      "text": "- [verified] Template queue length decreases by one after consumption"
+    },
+    {
+      "id": "e1d0890a",
+      "line": 40,
+      "type": "added",
+      "text": "## Feature: Import/Export"
+    },
+    {
+      "id": "5245eeb9",
+      "line": 41,
+      "type": "added",
+      "text": ""
+    },
+    {
+      "id": "69e4a24e",
+      "line": 42,
+      "type": "added",
+      "text": "- [verified] Importing laps preserves existing laps"
+    },
+    {
+      "id": "4bb14a3d",
+      "line": 43,
+      "type": "added",
+      "text": "- [verified] Imported laps are appended to the end of the lap list"
+    },
+    {
+      "id": "b457167f",
+      "line": 44,
+      "type": "added",
+      "text": "- [verified] Import is atomic (single undo removes all imported laps)"
+    },
+    {
+      "id": "c67a08fd",
+      "line": 45,
+      "type": "added",
+      "text": ""
+    },
+    {
+      "id": "b250ff9d",
+      "line": 46,
+      "type": "added",
+      "text": "## Feature: Undo/Redo System"
+    },
+    {
+      "id": "06ca3e3f",
+      "line": 47,
+      "type": "added",
+      "text": ""
+    },
+    {
+      "id": "ed71c4d2",
+      "line": 48,
+      "type": "added",
+      "text": "- [verified] All lap, label, select, and delete actions support undo and redo operations"
+    },
+    {
+      "id": "cd34ae7f",
+      "line": 49,
+      "type": "added",
+      "text": "- [verified] The undo/redo stack preserves complete action history for the session"
+    },
+    {
+      "id": "e135548b",
+      "line": 50,
+      "type": "added",
+      "text": ""
+    },
+    {
+      "id": "3e6fa8dc",
+      "line": 51,
+      "type": "added",
+      "text": "## Feature: User Interface"
+    },
+    {
+      "id": "13d76e6e",
+      "line": 52,
+      "type": "added",
+      "text": ""
+    },
+    {
+      "id": "9fb62096",
+      "line": 53,
+      "type": "added",
+      "text": "- [trusted] The app provides a translucent overlay mode that stays visible but unobtrusive during rehearsal"
+    },
+    {
+      "id": "4c8d2a90",
+      "line": 54,
+      "type": "added",
+      "text": "- [trusted] Visual design uses soft muted colors for minimal distraction"
+    },
+    {
+      "id": "e544a9c3",
+      "line": 55,
+      "type": "added",
+      "text": "- [trusted] A soft visual indicator shows progress toward a target talk duration when set"
+    },
+    {
+      "id": "8d2779ec",
+      "line": 56,
+      "type": "added",
+      "text": "- [trusted] Sessions can be exported as Markdown summaries"
+    },
+    {
+      "id": "45efbe39",
+      "line": 57,
+      "type": "added",
+      "text": ""
+    },
+    {
+      "id": "98b7e27b",
+      "line": 58,
+      "type": "added",
+      "text": "## Feature: Keyboard & Accessibility"
+    },
+    {
+      "id": "e6a328f0",
+      "line": 59,
+      "type": "added",
+      "text": ""
+    },
+    {
+      "id": "c76ec689",
+      "line": 60,
+      "type": "added",
       "text": "- [trusted] All primary functions are accessible via keyboard shortcuts for hands-free operation"
     },
     {
-      "id": "4b1b1b37",
-      "line": 39,
-      "type": "changed",
-      "old": "",
+      "id": "6f3fba8a",
+      "line": 61,
+      "type": "added",
       "text": "- [trusted] The app can be quickly shown and hidden during rehearsal"
     },
     {
-      "id": "36c16869",
-      "line": 40,
+      "id": "c2858701",
+      "line": 62,
       "type": "added",
       "text": ""
     }
   ],
-  "timestamp": "2026-02-07T03:19:00.109Z"
+  "timestamp": "2026-02-07T03:22:02.259Z"
 }

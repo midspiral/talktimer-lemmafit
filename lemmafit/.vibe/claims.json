@@ -178,6 +178,143 @@
       "line": 240
     },
     {
+      "name": "MoveUpSwaps",
+      "module": "TalkTimer",
+      "requires": [
+        "Inv(m)",
+        "1 <= idx < |m.laps|"
+      ],
+      "ensures": [
+        "Apply(m, MoveUp(idx)).laps[idx - 1] == m.laps[idx]",
+        "Apply(m, MoveUp(idx)).laps[idx] == m.laps[idx - 1]"
+      ],
+      "line": 251
+    },
+    {
+      "name": "MoveDownSwaps",
+      "module": "TalkTimer",
+      "requires": [
+        "Inv(m)",
+        "0 <= idx < |m.laps| - 1"
+      ],
+      "ensures": [
+        "Apply(m, MoveDown(idx)).laps[idx] == m.laps[idx + 1]",
+        "Apply(m, MoveDown(idx)).laps[idx + 1] == m.laps[idx]"
+      ],
+      "line": 259
+    },
+    {
+      "name": "MoveUpFirstNoEffect",
+      "module": "TalkTimer",
+      "requires": [
+        "Inv(m)",
+        "|m.laps| > 0"
+      ],
+      "ensures": [
+        "Apply(m, MoveUp(0)) == m"
+      ],
+      "line": 267
+    },
+    {
+      "name": "MoveDownLastNoEffect",
+      "module": "TalkTimer",
+      "requires": [
+        "Inv(m)",
+        "|m.laps| > 0"
+      ],
+      "ensures": [
+        "Apply(m, MoveDown(|m.laps| - 1)) == m"
+      ],
+      "line": 274
+    },
+    {
+      "name": "MovePreservesCount",
+      "module": "TalkTimer",
+      "requires": [
+        "Inv(m)"
+      ],
+      "ensures": [
+        "|Apply(m, MoveUp(idx)).laps| == |m.laps|",
+        "|Apply(m, MoveDown(idx)).laps| == |m.laps|"
+      ],
+      "line": 281
+    },
+    {
+      "name": "ConsumeTemplateSetsLabel",
+      "module": "TalkTimer",
+      "requires": [
+        "Inv(m)",
+        "|m.template| > 0",
+        "|m.laps| > 0"
+      ],
+      "ensures": [
+        "Apply(m, ConsumeTemplate).laps[|m.laps| - 1].section == m.template[0].section"
+      ],
+      "line": 292
+    },
+    {
+      "name": "ConsumeTemplateSetsExpected",
+      "module": "TalkTimer",
+      "requires": [
+        "Inv(m)",
+        "|m.template| > 0",
+        "|m.laps| > 0",
+        "m.template[0].expectedDuration >= 0"
+      ],
+      "ensures": [
+        "Apply(m, ConsumeTemplate).laps[|m.laps| - 1].expectedDuration == m.template[0].expectedDuration"
+      ],
+      "line": 300
+    },
+    {
+      "name": "ConsumeTemplateSelectsLap",
+      "module": "TalkTimer",
+      "requires": [
+        "Inv(m)",
+        "|m.template| > 0",
+        "|m.laps| > 0"
+      ],
+      "ensures": [
+        "Apply(m, ConsumeTemplate).laps[|m.laps| - 1].selected == true"
+      ],
+      "line": 309
+    },
+    {
+      "name": "ConsumeTemplateDecreasesQueue",
+      "module": "TalkTimer",
+      "requires": [
+        "Inv(m)",
+        "|m.template| > 0",
+        "|m.laps| > 0"
+      ],
+      "ensures": [
+        "|Apply(m, ConsumeTemplate).template| == |m.template| - 1"
+      ],
+      "line": 317
+    },
+    {
+      "name": "ImportPreservesExisting",
+      "module": "TalkTimer",
+      "requires": [
+        "Inv(m)"
+      ],
+      "ensures": [
+        "forall i: int {:trigger m.laps[i]} {:trigger Apply(m, ImportLaps(laps)).laps[i]} | 0 <= i < |m.laps| :: Apply(m, ImportLaps(laps)).laps[i] == m.laps[i]"
+      ],
+      "line": 329
+    },
+    {
+      "name": "ImportAppendsToEnd",
+      "module": "TalkTimer",
+      "requires": [
+        "Inv(m)"
+      ],
+      "ensures": [
+        "|Apply(m, ImportLaps(laps)).laps| == |m.laps| + |ClampLaps(laps)|"
+      ],
+      "line": 336
+    },
+    {
       "name": "SumOfNonNegativeIsNonNegative",
       "module": "TalkTimer",
       "requires": [
@@ -186,7 +323,7 @@
       "ensures": [
         "Sum(s) >= 0"
       ],
-      "line": 257
+      "line": 352
     },
     {
       "name": "SelectedTotalIsNonNegative",
@@ -197,7 +334,7 @@
       "ensures": [
         "Sum(durations) >= 0"
       ],
-      "line": 268
+      "line": 363
     },
     {
       "name": "InitSatisfiesInv",
@@ -539,7 +676,7 @@
       "ensures": [
         "|s| == 0 ==> Sum(s) == 0"
       ],
-      "line": 250
+      "line": 345
     },
     {
       "name": "Apply",

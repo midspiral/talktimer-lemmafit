@@ -244,6 +244,101 @@ module TalkTimer refines Domain {
   {}
 
   //----------------------------------------------------------------------
+  // Lap Reordering Lemmas
+  //----------------------------------------------------------------------
+
+  // [verified] Moving a lap up swaps it with the previous lap
+  lemma MoveUpSwaps(m: Model, idx: int)
+    requires Inv(m)
+    requires 1 <= idx < |m.laps|
+    ensures Apply(m, MoveUp(idx)).laps[idx-1] == m.laps[idx]
+    ensures Apply(m, MoveUp(idx)).laps[idx] == m.laps[idx-1]
+  {}
+
+  // [verified] Moving a lap down swaps it with the next lap
+  lemma MoveDownSwaps(m: Model, idx: int)
+    requires Inv(m)
+    requires 0 <= idx < |m.laps| - 1
+    ensures Apply(m, MoveDown(idx)).laps[idx] == m.laps[idx+1]
+    ensures Apply(m, MoveDown(idx)).laps[idx+1] == m.laps[idx]
+  {}
+
+  // [verified] Moving the first lap up has no effect
+  lemma MoveUpFirstNoEffect(m: Model)
+    requires Inv(m)
+    requires |m.laps| > 0
+    ensures Apply(m, MoveUp(0)) == m
+  {}
+
+  // [verified] Moving the last lap down has no effect
+  lemma MoveDownLastNoEffect(m: Model)
+    requires Inv(m)
+    requires |m.laps| > 0
+    ensures Apply(m, MoveDown(|m.laps| - 1)) == m
+  {}
+
+  // [verified] Moving preserves lap count
+  lemma MovePreservesCount(m: Model, idx: int)
+    requires Inv(m)
+    ensures |Apply(m, MoveUp(idx)).laps| == |m.laps|
+    ensures |Apply(m, MoveDown(idx)).laps| == |m.laps|
+  {}
+
+  //----------------------------------------------------------------------
+  // Practice Mode Lemmas
+  //----------------------------------------------------------------------
+
+  // [verified] Consuming template sets the lap's section label
+  lemma ConsumeTemplateSetsLabel(m: Model)
+    requires Inv(m)
+    requires |m.template| > 0
+    requires |m.laps| > 0
+    ensures Apply(m, ConsumeTemplate).laps[|m.laps|-1].section == m.template[0].section
+  {}
+
+  // [verified] Consuming template sets the lap's expected duration
+  lemma ConsumeTemplateSetsExpected(m: Model)
+    requires Inv(m)
+    requires |m.template| > 0
+    requires |m.laps| > 0
+    requires m.template[0].expectedDuration >= 0
+    ensures Apply(m, ConsumeTemplate).laps[|m.laps|-1].expectedDuration == m.template[0].expectedDuration
+  {}
+
+  // [verified] Consuming template selects the lap
+  lemma ConsumeTemplateSelectsLap(m: Model)
+    requires Inv(m)
+    requires |m.template| > 0
+    requires |m.laps| > 0
+    ensures Apply(m, ConsumeTemplate).laps[|m.laps|-1].selected == true
+  {}
+
+  // [verified] Template queue length decreases by one after consumption
+  lemma ConsumeTemplateDecreasesQueue(m: Model)
+    requires Inv(m)
+    requires |m.template| > 0
+    requires |m.laps| > 0
+    ensures |Apply(m, ConsumeTemplate).template| == |m.template| - 1
+  {}
+
+  //----------------------------------------------------------------------
+  // Import Lemmas
+  //----------------------------------------------------------------------
+
+  // [verified] Importing laps preserves existing laps
+  lemma ImportPreservesExisting(m: Model, laps: seq<Lap>)
+    requires Inv(m)
+    ensures forall i | 0 <= i < |m.laps| ::
+      Apply(m, ImportLaps(laps)).laps[i] == m.laps[i]
+  {}
+
+  // [verified] Import appends laps to the end
+  lemma ImportAppendsToEnd(m: Model, laps: seq<Lap>)
+    requires Inv(m)
+    ensures |Apply(m, ImportLaps(laps)).laps| == |m.laps| + |ClampLaps(laps)|
+  {}
+
+  //----------------------------------------------------------------------
   // Total Duration Helpers
   //----------------------------------------------------------------------
 

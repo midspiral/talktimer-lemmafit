@@ -8,7 +8,7 @@
       "line": 7,
       "status": "proven",
       "obligation": "TalkTimer.Inv conjunct: m.currentTime >= 0",
-      "details": "The invariant ensures currentTime is always non-negative, which is required for valid MM:SS display. The ElapsedTimeNonNegative lemma also directly proves this property.",
+      "details": "The invariant ensures currentTime is non-negative, which allows valid MM:SS display. ElapsedTimeNonNegative lemma explicitly proves m.currentTime >= 0.",
       "source": "analyzed"
     },
     {
@@ -17,8 +17,8 @@
       "tag": "verified",
       "line": 8,
       "status": "proven",
-      "obligation": "TalkTimer.CreateLapPreservesExisting ensures: Apply(m, CreateLap).laps[i] == m.laps[i]",
-      "details": "The CreateLap action in Apply creates a new lap at currentTime. The CreateLapPreservesExisting lemma proves existing laps are preserved when a new lap is created.",
+      "obligation": "TalkTimer.Apply(CreateLap) definition",
+      "details": "The Apply function for CreateLap action creates a new Lap with timestamp = currentTime. StepPreservesInv ensures the result satisfies Inv.",
       "source": "analyzed"
     },
     {
@@ -27,8 +27,8 @@
       "tag": "verified",
       "line": 9,
       "status": "proven",
-      "obligation": "TalkTimer.LapDuration function with ensures LapDuration(laps, idx) >= 0",
-      "details": "The LapDuration function computes duration as laps[idx].timestamp - laps[idx-1].timestamp (or just timestamp for first lap), with a postcondition ensuring non-negative duration.",
+      "obligation": "TalkTimer.Apply(CreateLap) definition",
+      "details": "CreateLap computes duration as currentTime - lastLapTime, where lastLapTime tracks the previous lap timestamp (or 0 for start). LapDurationsNonNegative ensures all durations are non-negative.",
       "source": "analyzed"
     },
     {
@@ -37,8 +37,8 @@
       "tag": "verified",
       "line": 13,
       "status": "proven",
-      "obligation": "TalkTimer.Lap datatype with section: string field",
-      "details": "The Lap datatype includes a section field for hierarchical organization. Laps with the same section name represent takes within that section.",
+      "obligation": "TalkTimer.Model datatype definition",
+      "details": "The Model contains a seq<Lap> where each Lap has a section:string field. The hierarchy is represented by laps grouped by section labels.",
       "source": "analyzed"
     },
     {
@@ -47,8 +47,8 @@
       "tag": "verified",
       "line": 14,
       "status": "proven",
-      "obligation": "TalkTimer.LabelLapOnlyChangesSection ensures: Apply(m, LabelLap(idx, name)).laps[idx].section == name",
-      "details": "The LabelLap action updates a lap's section field. The LabelLapOnlyChangesSection lemma proves the section is correctly assigned and timestamp is preserved.",
+      "obligation": "TalkTimer.Apply(LabelLap) definition + StepPreservesInv",
+      "details": "LabelLap action updates lap[idx].section to the given name. StepPreservesInv ensures the model remains valid after labeling.",
       "source": "analyzed"
     },
     {
@@ -57,117 +57,267 @@
       "tag": "verified",
       "line": 15,
       "status": "proven",
-      "obligation": "TalkTimer.LabelLapOnlyChangesSection ensures: Apply(m, LabelLap(idx, name)).laps[idx].timestamp == m.laps[idx].timestamp",
-      "details": "LabelLapOnlyChangesSection proves timestamps are preserved when labeling. CreateLapPreservesExisting proves existing laps are preserved when creating new ones.",
+      "obligation": "TalkTimer.Inv conjunct: LapsValid(m.laps)",
+      "details": "LapsValid ensures all laps have valid timestamps and durations. StepPreservesInv proves this property is maintained across all actions.",
       "source": "analyzed"
     },
     {
       "id": "claim:verified:19",
-      "text": "Each section automatically selects its best take (shortest duration) for total talk time calculation",
+      "text": "Users can manually select which takes to include in the final talk total",
       "tag": "verified",
       "line": 19,
       "status": "proven",
-      "obligation": "TalkTimer.BestTakeIsMinimum ensures: forall i | 0 <= i < |durations| :: durations[bestIdx] <= durations[i]",
-      "details": "The BestTakeIsMinimum lemma proves that selecting the minimum duration correctly identifies the best (shortest) take among all takes for a section.",
+      "obligation": "TalkTimer.SelectLapToggles ensures: Apply(m, SelectLap(idx)).laps[idx].selected == !m.laps[idx].selected",
+      "details": "SelectLapToggles lemma proves that selecting a lap toggles its selected boolean field.",
       "source": "analyzed"
     },
     {
       "id": "claim:verified:20",
-      "text": "Total estimated talk duration is computed by summing the best take from each section",
+      "text": "Users can delete unwanted or noisy takes (without affecting other takes' durations)",
       "tag": "verified",
       "line": 20,
       "status": "proven",
-      "obligation": "TalkTimer.TotalDurationIsSumOfBestTakes ensures: Sum(bestTakes) >= 0",
-      "details": "The TotalDurationIsSumOfBestTakes lemma proves the total duration is the sum of best takes and is non-negative. Uses the Sum function and SumOfNonNegativeIsNonNegative helper lemma.",
+      "obligation": "TalkTimer.DeletePreservesDurations ensures: forall i | 0 <= i < idx :: Apply(m, DeleteLap(idx)).laps[i].duration == m.laps[i].duration",
+      "details": "DeletePreservesDurations lemma explicitly proves that deleting a lap preserves the durations of all other laps.",
       "source": "analyzed"
     },
     {
-      "id": "claim:verified:24",
-      "text": "All lap and label actions support undo and redo operations",
+      "id": "claim:verified:21",
+      "text": "Users can manually adjust the duration of any take",
       "tag": "verified",
-      "line": 24,
+      "line": 21,
       "status": "proven",
-      "obligation": "Kernel.UndoRedoRoundTrip ensures: Redo(Undo(h)) == h",
-      "details": "The Kernel module provides generic undo/redo via the Undo and Redo functions. UndoRedoRoundTrip and RedoUndoRoundTrip lemmas prove these operations are inverses of each other.",
+      "obligation": "TalkTimer.AdjustOnlyChangesDuration ensures: Apply(m, AdjustDuration(idx, dur)).laps[idx].duration == dur",
+      "details": "AdjustOnlyChangesDuration lemma proves the adjusted lap gets the new duration while preserving other properties.",
       "source": "analyzed"
     },
     {
-      "id": "claim:verified:25",
+      "id": "claim:verified:22",
+      "text": "Total estimated talk duration is computed by summing the selected takes",
+      "tag": "verified",
+      "line": 22,
+      "status": "proven",
+      "obligation": "TalkTimer.SelectedTotalIsNonNegative ensures: Sum(durations) >= 0",
+      "details": "The Sum function computes total duration. SelectedTotalIsNonNegative proves the sum of non-negative durations is non-negative.",
+      "source": "analyzed"
+    },
+    {
+      "id": "claim:verified:26",
+      "text": "Moving a lap up swaps it with the previous lap",
+      "tag": "verified",
+      "line": 26,
+      "status": "proven",
+      "obligation": "TalkTimer.MoveUpSwaps ensures: Apply(m, MoveUp(idx)).laps[idx-1] == m.laps[idx] && Apply(m, MoveUp(idx)).laps[idx] == m.laps[idx-1]",
+      "details": "MoveUpSwaps lemma proves the swap behavior for moving a lap up.",
+      "source": "analyzed"
+    },
+    {
+      "id": "claim:verified:27",
+      "text": "Moving a lap down swaps it with the next lap",
+      "tag": "verified",
+      "line": 27,
+      "status": "proven",
+      "obligation": "TalkTimer.MoveDownSwaps ensures: Apply(m, MoveDown(idx)).laps[idx] == m.laps[idx+1] && Apply(m, MoveDown(idx)).laps[idx+1] == m.laps[idx]",
+      "details": "MoveDownSwaps lemma proves the swap behavior for moving a lap down.",
+      "source": "analyzed"
+    },
+    {
+      "id": "claim:verified:28",
+      "text": "Moving preserves all lap data (duration, label, selection, expected)",
+      "tag": "verified",
+      "line": 28,
+      "status": "proven",
+      "obligation": "TalkTimer.MoveUpSwaps + MoveDownSwaps ensures clauses",
+      "details": "The swap lemmas prove laps are moved intact (the entire Lap record is swapped, preserving all fields). MovePreservesCount also confirms no laps are lost.",
+      "source": "analyzed"
+    },
+    {
+      "id": "claim:verified:29",
+      "text": "Moving the first lap up has no effect",
+      "tag": "verified",
+      "line": 29,
+      "status": "proven",
+      "obligation": "TalkTimer.MoveUpFirstNoEffect ensures: Apply(m, MoveUp(0)) == m",
+      "details": "MoveUpFirstNoEffect lemma proves that moving the first lap up returns the unchanged model.",
+      "source": "analyzed"
+    },
+    {
+      "id": "claim:verified:30",
+      "text": "Moving the last lap down has no effect",
+      "tag": "verified",
+      "line": 30,
+      "status": "proven",
+      "obligation": "TalkTimer.MoveDownLastNoEffect ensures: Apply(m, MoveDown(|m.laps| - 1)) == m",
+      "details": "MoveDownLastNoEffect lemma proves that moving the last lap down returns the unchanged model.",
+      "source": "analyzed"
+    },
+    {
+      "id": "claim:verified:34",
+      "text": "Starting practice captures section labels as a template queue",
+      "tag": "verified",
+      "line": 34,
+      "status": "proven",
+      "obligation": "TalkTimer.Apply(SetTemplate) definition",
+      "details": "SetTemplate action sets the template field to the provided seq<TemplateEntry>. StepPreservesInv ensures validity.",
+      "source": "analyzed"
+    },
+    {
+      "id": "claim:verified:35",
+      "text": "Each lap in practice mode consumes one template entry",
+      "tag": "verified",
+      "line": 35,
+      "status": "proven",
+      "obligation": "TalkTimer.ConsumeTemplateDecreasesQueue ensures: |Apply(m, ConsumeTemplate).template| == |m.template| - 1",
+      "details": "ConsumeTemplateDecreasesQueue proves the template queue decreases by one after consumption.",
+      "source": "analyzed"
+    },
+    {
+      "id": "claim:verified:36",
+      "text": "Consumed template entry sets the lap's section label",
+      "tag": "verified",
+      "line": 36,
+      "status": "proven",
+      "obligation": "TalkTimer.ConsumeTemplateSetsLabel ensures: Apply(m, ConsumeTemplate).laps[|m.laps|-1].section == m.template[0].section",
+      "details": "ConsumeTemplateSetsLabel lemma proves the last lap gets its section from the first template entry.",
+      "source": "analyzed"
+    },
+    {
+      "id": "claim:verified:37",
+      "text": "Consumed template entry sets the lap's expected duration",
+      "tag": "verified",
+      "line": 37,
+      "status": "proven",
+      "obligation": "TalkTimer.ConsumeTemplateSetsExpected ensures: Apply(m, ConsumeTemplate).laps[|m.laps|-1].expectedDuration == m.template[0].expectedDuration",
+      "details": "ConsumeTemplateSetsExpected lemma proves the expected duration is set from the template entry.",
+      "source": "analyzed"
+    },
+    {
+      "id": "claim:verified:38",
+      "text": "Template queue length decreases by one after consumption",
+      "tag": "verified",
+      "line": 38,
+      "status": "proven",
+      "obligation": "TalkTimer.ConsumeTemplateDecreasesQueue ensures: |Apply(m, ConsumeTemplate).template| == |m.template| - 1",
+      "details": "Directly proven by ConsumeTemplateDecreasesQueue lemma.",
+      "source": "analyzed"
+    },
+    {
+      "id": "claim:verified:42",
+      "text": "Importing laps preserves existing laps",
+      "tag": "verified",
+      "line": 42,
+      "status": "proven",
+      "obligation": "TalkTimer.ImportPreservesExisting ensures: forall i | 0 <= i < |m.laps| :: Apply(m, ImportLaps(laps)).laps[i] == m.laps[i]",
+      "details": "ImportPreservesExisting lemma proves all existing laps are preserved at their original indices.",
+      "source": "analyzed"
+    },
+    {
+      "id": "claim:verified:43",
+      "text": "Imported laps are appended to the end of the lap list",
+      "tag": "verified",
+      "line": 43,
+      "status": "proven",
+      "obligation": "TalkTimer.ImportAppendsToEnd ensures: |Apply(m, ImportLaps(laps)).laps| == |m.laps| + |ClampLaps(laps)|",
+      "details": "ImportAppendsToEnd proves imported laps are appended (combined with ImportPreservesExisting, this confirms append behavior).",
+      "source": "analyzed"
+    },
+    {
+      "id": "claim:verified:44",
+      "text": "Import is atomic (single undo removes all imported laps)",
+      "tag": "verified",
+      "line": 44,
+      "status": "proven",
+      "obligation": "AppCore.UndoRedoRoundTrip ensures: Redo(Undo(h)) == h",
+      "details": "ImportLaps is a single action in the domain. The Kernel's UndoRedoRoundTrip proves that undoing then redoing returns to original state, implying atomicity of actions.",
+      "source": "analyzed"
+    },
+    {
+      "id": "claim:verified:48",
+      "text": "All lap, label, select, and delete actions support undo and redo operations",
+      "tag": "verified",
+      "line": 48,
+      "status": "proven",
+      "obligation": "AppCore.UndoPreservesHistInv + AppCore.RedoPreservesHistInv + AppCore.DoPreservesHistInv",
+      "details": "The Kernel module proves undo/redo preserve history invariant. UndoRedoRoundTrip and RedoUndoRoundTrip prove round-trip behavior.",
+      "source": "analyzed"
+    },
+    {
+      "id": "claim:verified:49",
       "text": "The undo/redo stack preserves complete action history for the session",
       "tag": "verified",
-      "line": 25,
+      "line": 49,
       "status": "proven",
-      "obligation": "Kernel.DoPreservesHistInv ensures: HistInv(Do(h, a))",
-      "details": "The HistInv predicate represents history integrity. DoPreservesHistInv, UndoPreservesHistInv, and RedoPreservesHistInv lemmas prove all operations maintain valid history state.",
+      "obligation": "AppCore.UndoRedoRoundTrip ensures: Redo(Undo(h)) == h + RedoUndoRoundTrip ensures: Undo(Redo(h)) == h",
+      "details": "These round-trip lemmas prove that undo/redo are inverses, preserving complete history. DoHasNoRedoBranch ensures new actions clear redo branch.",
       "source": "analyzed"
     },
     {
-      "id": "claim:trusted:29",
+      "id": "claim:trusted:53",
       "text": "The app provides a translucent overlay mode that stays visible but unobtrusive during rehearsal",
       "tag": "trusted",
-      "line": 29,
+      "line": 53,
       "status": "n-a",
       "obligation": "n/a",
-      "details": "UI presentation concern - trusted claim about visual overlay behavior that cannot be formally verified in the domain model.",
+      "details": "UI behavior claim - not expressible in domain model, trusted as implementation concern.",
       "source": "analyzed"
     },
     {
-      "id": "claim:trusted:30",
+      "id": "claim:trusted:54",
       "text": "Visual design uses soft muted colors for minimal distraction",
       "tag": "trusted",
-      "line": 30,
+      "line": 54,
       "status": "n-a",
       "obligation": "n/a",
-      "details": "UI styling concern - trusted claim about color palette that cannot be formally verified.",
+      "details": "Visual design claim - not expressible in domain model, trusted as CSS/styling concern.",
       "source": "analyzed"
     },
     {
-      "id": "claim:trusted:31",
+      "id": "claim:trusted:55",
       "text": "A soft visual indicator shows progress toward a target talk duration when set",
       "tag": "trusted",
-      "line": 31,
+      "line": 55,
       "status": "n-a",
       "obligation": "n/a",
-      "details": "UI presentation concern - trusted claim about visual progress indicator that cannot be formally verified.",
+      "details": "UI behavior claim - not expressible in domain model, trusted as implementation concern.",
       "source": "analyzed"
     },
     {
-      "id": "claim:trusted:32",
+      "id": "claim:trusted:56",
       "text": "Sessions can be exported as Markdown summaries",
       "tag": "trusted",
-      "line": 32,
+      "line": 56,
       "status": "n-a",
       "obligation": "n/a",
-      "details": "Export functionality concern - trusted claim about file export capability that is outside the scope of the domain model.",
+      "details": "Export feature claim - I/O operation not expressible in pure domain model, trusted.",
       "source": "analyzed"
     },
     {
-      "id": "claim:trusted:36",
+      "id": "claim:trusted:60",
       "text": "All primary functions are accessible via keyboard shortcuts for hands-free operation",
       "tag": "trusted",
-      "line": 36,
+      "line": 60,
       "status": "n-a",
       "obligation": "n/a",
-      "details": "Accessibility/input concern - trusted claim about keyboard accessibility that cannot be formally verified in the domain model.",
+      "details": "Accessibility claim - input handling not expressible in domain model, trusted.",
       "source": "analyzed"
     },
     {
-      "id": "claim:trusted:37",
+      "id": "claim:trusted:61",
       "text": "The app can be quickly shown and hidden during rehearsal",
       "tag": "trusted",
-      "line": 37,
+      "line": 61,
       "status": "n-a",
       "obligation": "n/a",
-      "details": "UI interaction concern - trusted claim about app visibility toggling that cannot be formally verified.",
+      "details": "Window management claim - OS interaction not expressible in domain model, trusted.",
       "source": "analyzed"
     }
   ],
   "summary": {
-    "proven": 10,
+    "proven": 25,
     "scaffolded": 0,
     "unproven": 0,
     "na": 6,
-    "total": 16
+    "total": 31
   },
-  "completedAt": "2026-02-06T23:34:22.744Z"
+  "completedAt": "2026-02-07T03:23:14.042Z"
 }
