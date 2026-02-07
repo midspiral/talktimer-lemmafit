@@ -110,6 +110,50 @@
   cursor: not-allowed;
 }
 
+.practice-btn {
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  border: 1px solid #9f7aea;
+  border-radius: 6px;
+  cursor: pointer;
+  background: #faf5ff;
+  color: #6b46c1;
+  transition: all 0.15s ease;
+}
+
+.practice-btn:hover {
+  background: #e9d8fd;
+}
+
+/* Template queue */
+.template-queue {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  margin-bottom: 1rem;
+  background: #faf5ff;
+  border-radius: 8px;
+  border: 1px solid #e9d8fd;
+}
+
+.queue-label {
+  font-size: 0.875rem;
+  color: #6b46c1;
+  font-weight: 500;
+}
+
+.queue-item {
+  font-weight: 600;
+  color: #553c9a;
+}
+
+.queue-remaining {
+  font-size: 0.75rem;
+  color: #9f7aea;
+}
+
 /* Laps */
 .laps {
   margin-bottom: 2rem;
@@ -223,6 +267,13 @@
 
 .lap-section:hover {
   background: #e2e8f0;
+}
+
+.expected-duration {
+  color: #9f7aea;
+  font-size: 0.875rem;
+  margin-left: auto;
+  white-space: nowrap;
 }
 
 .section-input {

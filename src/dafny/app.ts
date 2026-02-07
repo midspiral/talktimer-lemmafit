@@ -61,12 +61,19 @@ export interface Lap {
   duration: number;
   section: string;
   selected: boolean;
+  expectedDuration: number;
+}
+
+export interface TemplateEntry {
+  section: string;
+  expectedDuration: number;
 }
 
 export interface Model {
   currentTime: number;
   lastLapTime: number;
   laps: Lap[];
+  template: TemplateEntry[];
 }
 
 export type Action =
@@ -78,6 +85,8 @@ export type Action =
   | { type: 'AdjustDuration'; idx: number; duration: number }
   | { type: 'MoveUp'; idx: number }
   | { type: 'MoveDown'; idx: number }
+  | { type: 'SetTemplate'; labels: TemplateEntry[] }
+  | { type: 'ConsumeTemplate' }
   | { type: 'Reset' };
 
 export interface History {
@@ -113,6 +122,13 @@ interface DafnyLap {
   readonly dtor_duration: DafnyInt;
   readonly dtor_section: DafnySeq;
   readonly dtor_selected: boolean;
+  readonly dtor_expectedDuration: DafnyInt;
+}
+
+interface DafnyTemplateEntry {
+  readonly is_TemplateEntry: true;
+  readonly dtor_section: DafnySeq;
+  readonly dtor_expectedDuration: DafnyInt;
 }
 
 interface DafnyModel {
@@ -120,9 +136,10 @@ interface DafnyModel {
   readonly dtor_currentTime: DafnyInt;
   readonly dtor_lastLapTime: DafnyInt;
   readonly dtor_laps: DafnySeq<DafnyLap>;
+  readonly dtor_template: DafnySeq<DafnyTemplateEntry>;
 }
 
-type DafnyAction = { readonly is_SetTime: true; readonly is_CreateLap: false; readonly is_LabelLap: false; readonly is_SelectLap: false; readonly is_DeleteLap: false; readonly is_AdjustDuration: false; readonly is_MoveUp: false; readonly is_MoveDown: false; readonly is_Reset: false; readonly dtor_ms: DafnyInt } | { readonly is_SetTime: false; readonly is_CreateLap: true; readonly is_LabelLap: false; readonly is_SelectLap: false; readonly is_DeleteLap: false; readonly is_AdjustDuration: false; readonly is_MoveUp: false; readonly is_MoveDown: false; readonly is_Reset: false } | { readonly is_SetTime: false; readonly is_CreateLap: false; readonly is_LabelLap: true; readonly is_SelectLap: false; readonly is_DeleteLap: false; readonly is_AdjustDuration: false; readonly is_MoveUp: false; readonly is_MoveDown: false; readonly is_Reset: false; readonly dtor_idx: DafnyInt; readonly dtor_name: DafnySeq } | { readonly is_SetTime: false; readonly is_CreateLap: false; readonly is_LabelLap: false; readonly is_SelectLap: true; readonly is_DeleteLap: false; readonly is_AdjustDuration: false; readonly is_MoveUp: false; readonly is_MoveDown: false; readonly is_Reset: false; readonly dtor_idx: DafnyInt } | { readonly is_SetTime: false; readonly is_CreateLap: false; readonly is_LabelLap: false; readonly is_SelectLap: false; readonly is_DeleteLap: true; readonly is_AdjustDuration: false; readonly is_MoveUp: false; readonly is_MoveDown: false; readonly is_Reset: false; readonly dtor_idx: DafnyInt } | { readonly is_SetTime: false; readonly is_CreateLap: false; readonly is_LabelLap: false; readonly is_SelectLap: false; readonly is_DeleteLap: false; readonly is_AdjustDuration: true; readonly is_MoveUp: false; readonly is_MoveDown: false; readonly is_Reset: false; readonly dtor_idx: DafnyInt; readonly dtor_duration: DafnyInt } | { readonly is_SetTime: false; readonly is_CreateLap: false; readonly is_LabelLap: false; readonly is_SelectLap: false; readonly is_DeleteLap: false; readonly is_AdjustDuration: false; readonly is_MoveUp: true; readonly is_MoveDown: false; readonly is_Reset: false; readonly dtor_idx: DafnyInt } | { readonly is_SetTime: false; readonly is_CreateLap: false; readonly is_LabelLap: false; readonly is_SelectLap: false; readonly is_DeleteLap: false; readonly is_AdjustDuration: false; readonly is_MoveUp: false; readonly is_MoveDown: true; readonly is_Reset: false; readonly dtor_idx: DafnyInt } | { readonly is_SetTime: false; readonly is_CreateLap: false; readonly is_LabelLap: false; readonly is_SelectLap: false; readonly is_DeleteLap: false; readonly is_AdjustDuration: false; readonly is_MoveUp: false; readonly is_MoveDown: false; readonly is_Reset: true };
+type DafnyAction = { readonly is_SetTime: true; readonly is_CreateLap: false; readonly is_LabelLap: false; readonly is_SelectLap: false; readonly is_DeleteLap: false; readonly is_AdjustDuration: false; readonly is_MoveUp: false; readonly is_MoveDown: false; readonly is_SetTemplate: false; readonly is_ConsumeTemplate: false; readonly is_Reset: false; readonly dtor_ms: DafnyInt } | { readonly is_SetTime: false; readonly is_CreateLap: true; readonly is_LabelLap: false; readonly is_SelectLap: false; readonly is_DeleteLap: false; readonly is_AdjustDuration: false; readonly is_MoveUp: false; readonly is_MoveDown: false; readonly is_SetTemplate: false; readonly is_ConsumeTemplate: false; readonly is_Reset: false } | { readonly is_SetTime: false; readonly is_CreateLap: false; readonly is_LabelLap: true; readonly is_SelectLap: false; readonly is_DeleteLap: false; readonly is_AdjustDuration: false; readonly is_MoveUp: false; readonly is_MoveDown: false; readonly is_SetTemplate: false; readonly is_ConsumeTemplate: false; readonly is_Reset: false; readonly dtor_idx: DafnyInt; readonly dtor_name: DafnySeq } | { readonly is_SetTime: false; readonly is_CreateLap: false; readonly is_LabelLap: false; readonly is_SelectLap: true; readonly is_DeleteLap: false; readonly is_AdjustDuration: false; readonly is_MoveUp: false; readonly is_MoveDown: false; readonly is_SetTemplate: false; readonly is_ConsumeTemplate: false; readonly is_Reset: false; readonly dtor_idx: DafnyInt } | { readonly is_SetTime: false; readonly is_CreateLap: false; readonly is_LabelLap: false; readonly is_SelectLap: false; readonly is_DeleteLap: true; readonly is_AdjustDuration: false; readonly is_MoveUp: false; readonly is_MoveDown: false; readonly is_SetTemplate: false; readonly is_ConsumeTemplate: false; readonly is_Reset: false; readonly dtor_idx: DafnyInt } | { readonly is_SetTime: false; readonly is_CreateLap: false; readonly is_LabelLap: false; readonly is_SelectLap: false; readonly is_DeleteLap: false; readonly is_AdjustDuration: true; readonly is_MoveUp: false; readonly is_MoveDown: false; readonly is_SetTemplate: false; readonly is_ConsumeTemplate: false; readonly is_Reset: false; readonly dtor_idx: DafnyInt; readonly dtor_duration: DafnyInt } | { readonly is_SetTime: false; readonly is_CreateLap: false; readonly is_LabelLap: false; readonly is_SelectLap: false; readonly is_DeleteLap: false; readonly is_AdjustDuration: false; readonly is_MoveUp: true; readonly is_MoveDown: false; readonly is_SetTemplate: false; readonly is_ConsumeTemplate: false; readonly is_Reset: false; readonly dtor_idx: DafnyInt } | { readonly is_SetTime: false; readonly is_CreateLap: false; readonly is_LabelLap: false; readonly is_SelectLap: false; readonly is_DeleteLap: false; readonly is_AdjustDuration: false; readonly is_MoveUp: false; readonly is_MoveDown: true; readonly is_SetTemplate: false; readonly is_ConsumeTemplate: false; readonly is_Reset: false; readonly dtor_idx: DafnyInt } | { readonly is_SetTime: false; readonly is_CreateLap: false; readonly is_LabelLap: false; readonly is_SelectLap: false; readonly is_DeleteLap: false; readonly is_AdjustDuration: false; readonly is_MoveUp: false; readonly is_MoveDown: false; readonly is_SetTemplate: true; readonly is_ConsumeTemplate: false; readonly is_Reset: false; readonly dtor_labels: DafnySeq<DafnyTemplateEntry> } | { readonly is_SetTime: false; readonly is_CreateLap: false; readonly is_LabelLap: false; readonly is_SelectLap: false; readonly is_DeleteLap: false; readonly is_AdjustDuration: false; readonly is_MoveUp: false; readonly is_MoveDown: false; readonly is_SetTemplate: false; readonly is_ConsumeTemplate: true; readonly is_Reset: false } | { readonly is_SetTime: false; readonly is_CreateLap: false; readonly is_LabelLap: false; readonly is_SelectLap: false; readonly is_DeleteLap: false; readonly is_AdjustDuration: false; readonly is_MoveUp: false; readonly is_MoveDown: false; readonly is_SetTemplate: false; readonly is_ConsumeTemplate: false; readonly is_Reset: true };
 
 interface DafnyHistory {
   readonly is_History: true;
@@ -141,7 +158,8 @@ const lapFromJson = (json: any): DafnyLap => {
     new BigNumber(json.timestamp),
     new BigNumber(json.duration),
     _dafny.Seq.UnicodeFromString(json.section),
-    json.selected
+    json.selected,
+    new BigNumber(json.expectedDuration)
   );
 };
 
@@ -151,7 +169,24 @@ const lapToJson = (value: any): Lap => {
     timestamp: toNumber(value.dtor_timestamp),
     duration: toNumber(value.dtor_duration),
     section: dafnyStringToJs(value.dtor_section),
-    selected: value.dtor_selected
+    selected: value.dtor_selected,
+    expectedDuration: toNumber(value.dtor_expectedDuration)
+  };
+};
+
+// deno-lint-ignore no-explicit-any
+const templateentryFromJson = (json: any): DafnyTemplateEntry => {
+  return TalkTimer.TemplateEntry.create_TemplateEntry(
+    _dafny.Seq.UnicodeFromString(json.section),
+    new BigNumber(json.expectedDuration)
+  );
+};
+
+// deno-lint-ignore no-explicit-any
+const templateentryToJson = (value: any): TemplateEntry => {
+  return {
+    section: dafnyStringToJs(value.dtor_section),
+    expectedDuration: toNumber(value.dtor_expectedDuration)
   };
 };
 
@@ -160,7 +195,8 @@ const modelFromJson = (json: any): DafnyModel => {
   return TalkTimer.Model.create_Model(
     new BigNumber(json.currentTime),
     new BigNumber(json.lastLapTime),
-    _dafny.Seq.of(...(json.laps || []).map((x: any) => lapFromJson(x)))
+    _dafny.Seq.of(...(json.laps || []).map((x: any) => lapFromJson(x))),
+    _dafny.Seq.of(...(json.template || []).map((x: any) => templateentryFromJson(x)))
   );
 };
 
@@ -169,7 +205,8 @@ const modelToJson = (value: any): Model => {
   return {
     currentTime: toNumber(value.dtor_currentTime),
     lastLapTime: toNumber(value.dtor_lastLapTime),
-    laps: seqToArray(value.dtor_laps).map((x: any) => lapToJson(x))
+    laps: seqToArray(value.dtor_laps).map((x: any) => lapToJson(x)),
+    template: seqToArray(value.dtor_template).map((x: any) => templateentryToJson(x))
   };
 };
 
@@ -215,6 +252,14 @@ const actionFromJson = (json: any): DafnyAction => {
       return TalkTimer.Action.create_MoveDown(
         new BigNumber(json.idx)
       );
+    }
+    case 'SetTemplate': {
+      return TalkTimer.Action.create_SetTemplate(
+        _dafny.Seq.of(...(json.labels || []).map((x: any) => templateentryFromJson(x)))
+      );
+    }
+    case 'ConsumeTemplate': {
+      return TalkTimer.Action.create_ConsumeTemplate();
     }
     case 'Reset': {
       return TalkTimer.Action.create_Reset();
@@ -265,6 +310,13 @@ const actionToJson = (value: any): Action => {
       type: 'MoveDown',
       idx: toNumber(value.dtor_idx)
     };
+  } else if (value.is_SetTemplate) {
+    return {
+      type: 'SetTemplate',
+      labels: seqToArray(value.dtor_labels).map((x: any) => templateentryToJson(x))
+    };
+  } else if (value.is_ConsumeTemplate) {
+    return { type: 'ConsumeTemplate' };
   } else if (value.is_Reset) {
     return { type: 'Reset' };
   }
@@ -297,7 +349,10 @@ interface AppInternal { _dafny: unknown; TalkTimer: unknown; AppCore: unknown; }
 
 const App = {
   // Lap constructors
-  Lap: (timestamp: number, duration: number, section: string, selected: boolean) => TalkTimer.Lap.create_Lap(new BigNumber(timestamp), new BigNumber(duration), _dafny.Seq.UnicodeFromString(section), selected),
+  Lap: (timestamp: number, duration: number, section: string, selected: boolean, expectedDuration: number) => TalkTimer.Lap.create_Lap(new BigNumber(timestamp), new BigNumber(duration), _dafny.Seq.UnicodeFromString(section), selected, new BigNumber(expectedDuration)),
+
+  // TemplateEntry constructors
+  TemplateEntry: (section: string, expectedDuration: number) => TalkTimer.TemplateEntry.create_TemplateEntry(_dafny.Seq.UnicodeFromString(section), new BigNumber(expectedDuration)),
 
   // Action constructors
   SetTime: (ms: number) => TalkTimer.Action.create_SetTime(new BigNumber(ms)),
@@ -308,12 +363,15 @@ const App = {
   AdjustDuration: (idx: number, duration: number) => TalkTimer.Action.create_AdjustDuration(new BigNumber(idx), new BigNumber(duration)),
   MoveUp: (idx: number) => TalkTimer.Action.create_MoveUp(new BigNumber(idx)),
   MoveDown: (idx: number) => TalkTimer.Action.create_MoveDown(new BigNumber(idx)),
+  SetTemplate: (labels: TemplateEntry[]) => TalkTimer.Action.create_SetTemplate(_dafny.Seq.of(...(labels || []).map((x: any) => templateentryFromJson(x)))),
+  ConsumeTemplate: () => TalkTimer.Action.create_ConsumeTemplate(),
   Reset: () => TalkTimer.Action.create_Reset(),
 
   // Model accessors
   GetCurrentTime: (m: DafnyModel) => toNumber(m.dtor_currentTime),
   GetLastLapTime: (m: DafnyModel) => toNumber(m.dtor_lastLapTime),
   GetLaps: (m: DafnyModel) => seqToArray(m.dtor_laps).map((x: any) => lapToJson(x)),
+  GetTemplate: (m: DafnyModel) => seqToArray(m.dtor_template).map((x: any) => templateentryToJson(x)),
 
   // AppCore functions
   Step: (m: DafnyModel, a: DafnyAction) => AppCore.__default.Step(m, a),
@@ -327,6 +385,8 @@ const App = {
   // Conversion functions
   lapToJson,
   lapFromJson,
+  templateentryToJson,
+  templateentryFromJson,
   modelToJson,
   modelFromJson,
   actionToJson,

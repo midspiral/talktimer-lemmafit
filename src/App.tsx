@@ -91,6 +91,7 @@ function App() {
   const sectionInputRef = useRef<HTMLInputElement>(null)
   const durationInputRef = useRef<HTMLInputElement>(null)
 
+
   // Convert Dafny history to JSON for rendering
   const history = Api.historyToJson(dafnyHistory)
   const model = history.present
@@ -149,14 +150,41 @@ function App() {
     dispatch({ type: 'Reset' })
   }
 
+  // Start practice mode - use current laps as template
+  const startPractice = () => {
+    const labels = model.laps
+      .filter(lap => lap.section !== '')
+      .map(lap => ({ section: lap.section, expectedDuration: lap.duration }))
+    if (labels.length === 0) return
+    setRunning(false)
+    setStartTime(null)
+    setDisplayTime(0)
+    // Set template then reset (template survives reset? No - reset clears it)
+    // We need to set template AFTER reset, so do it in one setDafnyHistory call
+    setDafnyHistory((h: DafnyHistory) => {
+      const resetAction = Api.actionFromJson({ type: 'Reset' })
+      const h1 = Api.Do(h, resetAction)
+      const setTemplateAction = Api.actionFromJson({ type: 'SetTemplate', labels })
+      return Api.Do(h1, setTemplateAction)
+    })
+  }
+
   // Create lap at current time
   const createLap = () => {
-    const setTimeAction = Api.actionFromJson({ type: 'SetTime', ms: displayTime })
-    const createLapAction = Api.actionFromJson({ type: 'CreateLap' })
-
     setDafnyHistory((h: DafnyHistory) => {
+      const setTimeAction = Api.actionFromJson({ type: 'SetTime', ms: displayTime })
+      const createLapAction = Api.actionFromJson({ type: 'CreateLap' })
+
       const h1 = Api.Do(h, setTimeAction)
-      return Api.Do(h1, createLapAction)
+      const h2 = Api.Do(h1, createLapAction)
+
+      // In practice mode, auto-label from template
+      if (model.template.length > 0) {
+        const consumeAction = Api.actionFromJson({ type: 'ConsumeTemplate' })
+        return Api.Do(h2, consumeAction)
+      }
+
+      return h2
     })
   }
 
@@ -315,7 +343,24 @@ function App() {
         <button onClick={redo} disabled={!canRedo} className="redo-btn">
           Redo
         </button>
+        {model.laps.some(lap => lap.section !== '') && model.template.length === 0 && (
+          <button onClick={startPractice} className="practice-btn">
+            Practice
+          </button>
+        )}
       </div>
+
+      {model.template.length > 0 && (
+        <div className="template-queue">
+          <span className="queue-label">Next:</span>
+          <span className="queue-item">
+            {model.template[0].section} (expected {formatTime(model.template[0].expectedDuration)})
+          </span>
+          {model.template.length > 1 && (
+            <span className="queue-remaining">+{model.template.length - 1} more</span>
+          )}
+        </div>
+      )}
 
       {model.laps.length > 0 && (
         <div className="laps">
@@ -380,6 +425,10 @@ function App() {
                     >
                       {lap.section || 'Click to label...'}
                     </span>
+                  )}
+
+                  {lap.expectedDuration >= 0 && (
+                    <span className="expected-duration">(expected {formatTime(lap.expectedDuration)})</span>
                   )}
 
                   <button
