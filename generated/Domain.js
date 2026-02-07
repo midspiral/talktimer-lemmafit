@@ -1196,8 +1196,39 @@ let TalkTimer = (function() {
     _parentTraits() {
       return [];
     }
+    static TagIn(tag, tags) {
+      return _dafny.Seq.contains(tags, tag);
+    };
+    static AddTagToSeq(tags, tag) {
+      if (_dafny.Seq.contains(tags, tag)) {
+        return tags;
+      } else {
+        return _dafny.Seq.Concat(tags, _dafny.Seq.of(tag));
+      }
+    };
+    static RemoveTagFromSeq(tags, tag) {
+      let _0___accumulator = _dafny.Seq.of();
+      TAIL_CALL_START: while (true) {
+        if ((new BigNumber((tags).length)).isEqualTo(_dafny.ZERO)) {
+          return _dafny.Seq.Concat(_0___accumulator, _dafny.Seq.of());
+        } else if (_dafny.areEqual((tags)[_dafny.ZERO], tag)) {
+          let _in0 = (tags).slice(_dafny.ONE);
+          let _in1 = tag;
+          tags = _in0;
+          tag = _in1;
+          continue TAIL_CALL_START;
+        } else {
+          _0___accumulator = _dafny.Seq.Concat(_0___accumulator, _dafny.Seq.of((tags)[_dafny.ZERO]));
+          let _in2 = (tags).slice(_dafny.ONE);
+          let _in3 = tag;
+          tags = _in2;
+          tag = _in3;
+          continue TAIL_CALL_START;
+        }
+      }
+    };
     static ClampLap(lap) {
-      return TalkTimer.Lap.create_Lap((((_dafny.ZERO).isLessThanOrEqualTo((lap).dtor_timestamp)) ? ((lap).dtor_timestamp) : (_dafny.ZERO)), (((_dafny.ZERO).isLessThanOrEqualTo((lap).dtor_duration)) ? ((lap).dtor_duration) : (_dafny.ZERO)), (lap).dtor_section, (lap).dtor_selected, (((new BigNumber(-1)).isLessThanOrEqualTo((lap).dtor_expectedDuration)) ? ((lap).dtor_expectedDuration) : (new BigNumber(-1))));
+      return TalkTimer.Lap.create_Lap((((_dafny.ZERO).isLessThanOrEqualTo((lap).dtor_timestamp)) ? ((lap).dtor_timestamp) : (_dafny.ZERO)), (((_dafny.ZERO).isLessThanOrEqualTo((lap).dtor_duration)) ? ((lap).dtor_duration) : (_dafny.ZERO)), (lap).dtor_section, (lap).dtor_selected, (((new BigNumber(-1)).isLessThanOrEqualTo((lap).dtor_expectedDuration)) ? ((lap).dtor_expectedDuration) : (new BigNumber(-1))), (lap).dtor_tags);
     };
     static ClampLaps(laps) {
       let _0___accumulator = _dafny.Seq.of();
@@ -1231,7 +1262,7 @@ let TalkTimer = (function() {
       {
         if (_source0.is_CreateLap) {
           let _1_duration = ((m).dtor_currentTime).minus((m).dtor_lastLapTime);
-          let _2_newLap = TalkTimer.Lap.create_Lap((m).dtor_currentTime, _1_duration, _dafny.Seq.UnicodeFromString(""), false, new BigNumber(-1));
+          let _2_newLap = TalkTimer.Lap.create_Lap((m).dtor_currentTime, _1_duration, _dafny.Seq.UnicodeFromString(""), false, new BigNumber(-1), _dafny.Seq.of());
           return TalkTimer.Model.create_Model((m).dtor_currentTime, (m).dtor_currentTime, _dafny.Seq.Concat((m).dtor_laps, _dafny.Seq.of(_2_newLap)), (m).dtor_template);
         }
       }
@@ -1244,7 +1275,7 @@ let TalkTimer = (function() {
   return function (_5_dt__update__tmp_h0) {
     return function (_pat_let1_0) {
       return function (_6_dt__update_hsection_h0) {
-        return TalkTimer.Lap.create_Lap((_5_dt__update__tmp_h0).dtor_timestamp, (_5_dt__update__tmp_h0).dtor_duration, _6_dt__update_hsection_h0, (_5_dt__update__tmp_h0).dtor_selected, (_5_dt__update__tmp_h0).dtor_expectedDuration);
+        return TalkTimer.Lap.create_Lap((_5_dt__update__tmp_h0).dtor_timestamp, (_5_dt__update__tmp_h0).dtor_duration, _6_dt__update_hsection_h0, (_5_dt__update__tmp_h0).dtor_selected, (_5_dt__update__tmp_h0).dtor_expectedDuration, (_5_dt__update__tmp_h0).dtor_tags);
       }(_pat_let1_0);
     }(_4_name);
   }(_pat_let0_0);
@@ -1262,7 +1293,7 @@ let TalkTimer = (function() {
   return function (_8_dt__update__tmp_h1) {
     return function (_pat_let3_0) {
       return function (_9_dt__update_hselected_h0) {
-        return TalkTimer.Lap.create_Lap((_8_dt__update__tmp_h1).dtor_timestamp, (_8_dt__update__tmp_h1).dtor_duration, (_8_dt__update__tmp_h1).dtor_section, _9_dt__update_hselected_h0, (_8_dt__update__tmp_h1).dtor_expectedDuration);
+        return TalkTimer.Lap.create_Lap((_8_dt__update__tmp_h1).dtor_timestamp, (_8_dt__update__tmp_h1).dtor_duration, (_8_dt__update__tmp_h1).dtor_section, _9_dt__update_hselected_h0, (_8_dt__update__tmp_h1).dtor_expectedDuration, (_8_dt__update__tmp_h1).dtor_tags);
       }(_pat_let3_0);
     }(!((((_pat_let_tv0).dtor_laps)[_7_idx]).dtor_selected));
   }(_pat_let2_0);
@@ -1291,7 +1322,7 @@ let TalkTimer = (function() {
   return function (_13_dt__update__tmp_h2) {
     return function (_pat_let5_0) {
       return function (_14_dt__update_hduration_h0) {
-        return TalkTimer.Lap.create_Lap((_13_dt__update__tmp_h2).dtor_timestamp, _14_dt__update_hduration_h0, (_13_dt__update__tmp_h2).dtor_section, (_13_dt__update__tmp_h2).dtor_selected, (_13_dt__update__tmp_h2).dtor_expectedDuration);
+        return TalkTimer.Lap.create_Lap((_13_dt__update__tmp_h2).dtor_timestamp, _14_dt__update_hduration_h0, (_13_dt__update__tmp_h2).dtor_section, (_13_dt__update__tmp_h2).dtor_selected, (_13_dt__update__tmp_h2).dtor_expectedDuration, (_13_dt__update__tmp_h2).dtor_tags);
       }(_pat_let5_0);
     }(_12_duration);
   }(_pat_let4_0);
@@ -1324,35 +1355,75 @@ let TalkTimer = (function() {
         }
       }
       {
+        if (_source0.is_AddTag) {
+          let _19_idx = (_source0).idx;
+          let _20_tag = (_source0).tag;
+          if (((_dafny.ZERO).isLessThanOrEqualTo(_19_idx)) && ((_19_idx).isLessThan(new BigNumber(((m).dtor_laps).length)))) {
+            let _21_newTags = TalkTimer.__default.AddTagToSeq((((m).dtor_laps)[_19_idx]).dtor_tags, _20_tag);
+            return TalkTimer.Model.create_Model((m).dtor_currentTime, (m).dtor_lastLapTime, _dafny.Seq.update((m).dtor_laps, _19_idx, function (_pat_let6_0) {
+  return function (_22_dt__update__tmp_h3) {
+    return function (_pat_let7_0) {
+      return function (_23_dt__update_htags_h0) {
+        return TalkTimer.Lap.create_Lap((_22_dt__update__tmp_h3).dtor_timestamp, (_22_dt__update__tmp_h3).dtor_duration, (_22_dt__update__tmp_h3).dtor_section, (_22_dt__update__tmp_h3).dtor_selected, (_22_dt__update__tmp_h3).dtor_expectedDuration, _23_dt__update_htags_h0);
+      }(_pat_let7_0);
+    }(_21_newTags);
+  }(_pat_let6_0);
+}(((m).dtor_laps)[_19_idx])), (m).dtor_template);
+          } else {
+            return m;
+          }
+        }
+      }
+      {
+        if (_source0.is_RemoveTag) {
+          let _24_idx = (_source0).idx;
+          let _25_tag = (_source0).tag;
+          if (((_dafny.ZERO).isLessThanOrEqualTo(_24_idx)) && ((_24_idx).isLessThan(new BigNumber(((m).dtor_laps).length)))) {
+            let _26_newTags = TalkTimer.__default.RemoveTagFromSeq((((m).dtor_laps)[_24_idx]).dtor_tags, _25_tag);
+            return TalkTimer.Model.create_Model((m).dtor_currentTime, (m).dtor_lastLapTime, _dafny.Seq.update((m).dtor_laps, _24_idx, function (_pat_let8_0) {
+  return function (_27_dt__update__tmp_h4) {
+    return function (_pat_let9_0) {
+      return function (_28_dt__update_htags_h1) {
+        return TalkTimer.Lap.create_Lap((_27_dt__update__tmp_h4).dtor_timestamp, (_27_dt__update__tmp_h4).dtor_duration, (_27_dt__update__tmp_h4).dtor_section, (_27_dt__update__tmp_h4).dtor_selected, (_27_dt__update__tmp_h4).dtor_expectedDuration, _28_dt__update_htags_h1);
+      }(_pat_let9_0);
+    }(_26_newTags);
+  }(_pat_let8_0);
+}(((m).dtor_laps)[_24_idx])), (m).dtor_template);
+          } else {
+            return m;
+          }
+        }
+      }
+      {
         if (_source0.is_SetTemplate) {
-          let _19_labels = (_source0).labels;
-          return TalkTimer.Model.create_Model((m).dtor_currentTime, (m).dtor_lastLapTime, (m).dtor_laps, _19_labels);
+          let _29_labels = (_source0).labels;
+          return TalkTimer.Model.create_Model((m).dtor_currentTime, (m).dtor_lastLapTime, (m).dtor_laps, _29_labels);
         }
       }
       {
         if (_source0.is_ConsumeTemplate) {
           if (((_dafny.ZERO).isLessThan(new BigNumber(((m).dtor_template).length))) && ((_dafny.ZERO).isLessThan(new BigNumber(((m).dtor_laps).length)))) {
-            let _20_idx = (new BigNumber(((m).dtor_laps).length)).minus(_dafny.ONE);
-            let _21_entry = ((m).dtor_template)[_dafny.ZERO];
-            let _22_expectedDur = (((_dafny.ZERO).isLessThanOrEqualTo((_21_entry).dtor_expectedDuration)) ? ((_21_entry).dtor_expectedDuration) : (new BigNumber(-1)));
-            let _23_newLaps = _dafny.Seq.update((m).dtor_laps, _20_idx, function (_pat_let6_0) {
-              return function (_24_dt__update__tmp_h3) {
-                return function (_pat_let7_0) {
-                  return function (_25_dt__update_hexpectedDuration_h0) {
-                    return function (_pat_let8_0) {
-                      return function (_26_dt__update_hselected_h1) {
-                        return function (_pat_let9_0) {
-                          return function (_27_dt__update_hsection_h1) {
-                            return TalkTimer.Lap.create_Lap((_24_dt__update__tmp_h3).dtor_timestamp, (_24_dt__update__tmp_h3).dtor_duration, _27_dt__update_hsection_h1, _26_dt__update_hselected_h1, _25_dt__update_hexpectedDuration_h0);
-                          }(_pat_let9_0);
-                        }((_21_entry).dtor_section);
-                      }(_pat_let8_0);
+            let _30_idx = (new BigNumber(((m).dtor_laps).length)).minus(_dafny.ONE);
+            let _31_entry = ((m).dtor_template)[_dafny.ZERO];
+            let _32_expectedDur = (((_dafny.ZERO).isLessThanOrEqualTo((_31_entry).dtor_expectedDuration)) ? ((_31_entry).dtor_expectedDuration) : (new BigNumber(-1)));
+            let _33_newLaps = _dafny.Seq.update((m).dtor_laps, _30_idx, function (_pat_let10_0) {
+              return function (_34_dt__update__tmp_h5) {
+                return function (_pat_let11_0) {
+                  return function (_35_dt__update_hexpectedDuration_h0) {
+                    return function (_pat_let12_0) {
+                      return function (_36_dt__update_hselected_h1) {
+                        return function (_pat_let13_0) {
+                          return function (_37_dt__update_hsection_h1) {
+                            return TalkTimer.Lap.create_Lap((_34_dt__update__tmp_h5).dtor_timestamp, (_34_dt__update__tmp_h5).dtor_duration, _37_dt__update_hsection_h1, _36_dt__update_hselected_h1, _35_dt__update_hexpectedDuration_h0, (_34_dt__update__tmp_h5).dtor_tags);
+                          }(_pat_let13_0);
+                        }((_31_entry).dtor_section);
+                      }(_pat_let12_0);
                     }(true);
-                  }(_pat_let7_0);
-                }(_22_expectedDur);
-              }(_pat_let6_0);
-            }(((m).dtor_laps)[_20_idx]));
-            return TalkTimer.Model.create_Model((m).dtor_currentTime, (m).dtor_lastLapTime, _23_newLaps, ((m).dtor_template).slice(_dafny.ONE));
+                  }(_pat_let11_0);
+                }(_32_expectedDur);
+              }(_pat_let10_0);
+            }(((m).dtor_laps)[_30_idx]));
+            return TalkTimer.Model.create_Model((m).dtor_currentTime, (m).dtor_lastLapTime, _33_newLaps, ((m).dtor_template).slice(_dafny.ONE));
           } else {
             return m;
           }
@@ -1360,9 +1431,9 @@ let TalkTimer = (function() {
       }
       {
         if (_source0.is_ImportLaps) {
-          let _28_laps = (_source0).laps;
-          let _29_validLaps = TalkTimer.__default.ClampLaps(_28_laps);
-          return TalkTimer.Model.create_Model((m).dtor_currentTime, (m).dtor_lastLapTime, _dafny.Seq.Concat((m).dtor_laps, _29_validLaps), (m).dtor_template);
+          let _38_laps = (_source0).laps;
+          let _39_validLaps = TalkTimer.__default.ClampLaps(_38_laps);
+          return TalkTimer.Model.create_Model((m).dtor_currentTime, (m).dtor_lastLapTime, _dafny.Seq.Concat((m).dtor_laps, _39_validLaps), (m).dtor_template);
         }
       }
       {
@@ -1391,13 +1462,14 @@ let TalkTimer = (function() {
     constructor(tag) {
       this.$tag = tag;
     }
-    static create_Lap(timestamp, duration, section, selected, expectedDuration) {
+    static create_Lap(timestamp, duration, section, selected, expectedDuration, tags) {
       let $dt = new Lap(0);
       $dt.timestamp = timestamp;
       $dt.duration = duration;
       $dt.section = section;
       $dt.selected = selected;
       $dt.expectedDuration = expectedDuration;
+      $dt.tags = tags;
       return $dt;
     }
     get is_Lap() { return this.$tag === 0; }
@@ -1406,9 +1478,10 @@ let TalkTimer = (function() {
     get dtor_section() { return this.section; }
     get dtor_selected() { return this.selected; }
     get dtor_expectedDuration() { return this.expectedDuration; }
+    get dtor_tags() { return this.tags; }
     toString() {
       if (this.$tag === 0) {
-        return "TalkTimer.Lap.Lap" + "(" + _dafny.toString(this.timestamp) + ", " + _dafny.toString(this.duration) + ", " + this.section.toVerbatimString(true) + ", " + _dafny.toString(this.selected) + ", " + _dafny.toString(this.expectedDuration) + ")";
+        return "TalkTimer.Lap.Lap" + "(" + _dafny.toString(this.timestamp) + ", " + _dafny.toString(this.duration) + ", " + this.section.toVerbatimString(true) + ", " + _dafny.toString(this.selected) + ", " + _dafny.toString(this.expectedDuration) + ", " + _dafny.toString(this.tags) + ")";
       } else  {
         return "<unexpected>";
       }
@@ -1417,13 +1490,13 @@ let TalkTimer = (function() {
       if (this === other) {
         return true;
       } else if (this.$tag === 0) {
-        return other.$tag === 0 && _dafny.areEqual(this.timestamp, other.timestamp) && _dafny.areEqual(this.duration, other.duration) && _dafny.areEqual(this.section, other.section) && this.selected === other.selected && _dafny.areEqual(this.expectedDuration, other.expectedDuration);
+        return other.$tag === 0 && _dafny.areEqual(this.timestamp, other.timestamp) && _dafny.areEqual(this.duration, other.duration) && _dafny.areEqual(this.section, other.section) && this.selected === other.selected && _dafny.areEqual(this.expectedDuration, other.expectedDuration) && _dafny.areEqual(this.tags, other.tags);
       } else  {
         return false; // unexpected
       }
     }
     static Default() {
-      return TalkTimer.Lap.create_Lap(_dafny.ZERO, _dafny.ZERO, _dafny.Seq.UnicodeFromString(""), false, _dafny.ZERO);
+      return TalkTimer.Lap.create_Lap(_dafny.ZERO, _dafny.ZERO, _dafny.Seq.UnicodeFromString(""), false, _dafny.ZERO, _dafny.Seq.of());
     }
     static Rtd() {
       return class {
@@ -1565,22 +1638,34 @@ let TalkTimer = (function() {
       $dt.idx = idx;
       return $dt;
     }
-    static create_SetTemplate(labels) {
+    static create_AddTag(idx, tag) {
       let $dt = new Action(8);
+      $dt.idx = idx;
+      $dt.tag = tag;
+      return $dt;
+    }
+    static create_RemoveTag(idx, tag) {
+      let $dt = new Action(9);
+      $dt.idx = idx;
+      $dt.tag = tag;
+      return $dt;
+    }
+    static create_SetTemplate(labels) {
+      let $dt = new Action(10);
       $dt.labels = labels;
       return $dt;
     }
     static create_ConsumeTemplate() {
-      let $dt = new Action(9);
+      let $dt = new Action(11);
       return $dt;
     }
     static create_ImportLaps(laps) {
-      let $dt = new Action(10);
+      let $dt = new Action(12);
       $dt.laps = laps;
       return $dt;
     }
     static create_Reset() {
-      let $dt = new Action(11);
+      let $dt = new Action(13);
       return $dt;
     }
     get is_SetTime() { return this.$tag === 0; }
@@ -1591,14 +1676,17 @@ let TalkTimer = (function() {
     get is_AdjustDuration() { return this.$tag === 5; }
     get is_MoveUp() { return this.$tag === 6; }
     get is_MoveDown() { return this.$tag === 7; }
-    get is_SetTemplate() { return this.$tag === 8; }
-    get is_ConsumeTemplate() { return this.$tag === 9; }
-    get is_ImportLaps() { return this.$tag === 10; }
-    get is_Reset() { return this.$tag === 11; }
+    get is_AddTag() { return this.$tag === 8; }
+    get is_RemoveTag() { return this.$tag === 9; }
+    get is_SetTemplate() { return this.$tag === 10; }
+    get is_ConsumeTemplate() { return this.$tag === 11; }
+    get is_ImportLaps() { return this.$tag === 12; }
+    get is_Reset() { return this.$tag === 13; }
     get dtor_ms() { return this.ms; }
     get dtor_idx() { return this.idx; }
     get dtor_name() { return this.name; }
     get dtor_duration() { return this.duration; }
+    get dtor_tag() { return this.tag; }
     get dtor_labels() { return this.labels; }
     get dtor_laps() { return this.laps; }
     toString() {
@@ -1619,12 +1707,16 @@ let TalkTimer = (function() {
       } else if (this.$tag === 7) {
         return "TalkTimer.Action.MoveDown" + "(" + _dafny.toString(this.idx) + ")";
       } else if (this.$tag === 8) {
-        return "TalkTimer.Action.SetTemplate" + "(" + _dafny.toString(this.labels) + ")";
+        return "TalkTimer.Action.AddTag" + "(" + _dafny.toString(this.idx) + ", " + this.tag.toVerbatimString(true) + ")";
       } else if (this.$tag === 9) {
-        return "TalkTimer.Action.ConsumeTemplate";
+        return "TalkTimer.Action.RemoveTag" + "(" + _dafny.toString(this.idx) + ", " + this.tag.toVerbatimString(true) + ")";
       } else if (this.$tag === 10) {
-        return "TalkTimer.Action.ImportLaps" + "(" + _dafny.toString(this.laps) + ")";
+        return "TalkTimer.Action.SetTemplate" + "(" + _dafny.toString(this.labels) + ")";
       } else if (this.$tag === 11) {
+        return "TalkTimer.Action.ConsumeTemplate";
+      } else if (this.$tag === 12) {
+        return "TalkTimer.Action.ImportLaps" + "(" + _dafny.toString(this.laps) + ")";
+      } else if (this.$tag === 13) {
         return "TalkTimer.Action.Reset";
       } else  {
         return "<unexpected>";
@@ -1650,13 +1742,17 @@ let TalkTimer = (function() {
       } else if (this.$tag === 7) {
         return other.$tag === 7 && _dafny.areEqual(this.idx, other.idx);
       } else if (this.$tag === 8) {
-        return other.$tag === 8 && _dafny.areEqual(this.labels, other.labels);
+        return other.$tag === 8 && _dafny.areEqual(this.idx, other.idx) && _dafny.areEqual(this.tag, other.tag);
       } else if (this.$tag === 9) {
-        return other.$tag === 9;
+        return other.$tag === 9 && _dafny.areEqual(this.idx, other.idx) && _dafny.areEqual(this.tag, other.tag);
       } else if (this.$tag === 10) {
-        return other.$tag === 10 && _dafny.areEqual(this.laps, other.laps);
+        return other.$tag === 10 && _dafny.areEqual(this.labels, other.labels);
       } else if (this.$tag === 11) {
         return other.$tag === 11;
+      } else if (this.$tag === 12) {
+        return other.$tag === 12 && _dafny.areEqual(this.laps, other.laps);
+      } else if (this.$tag === 13) {
+        return other.$tag === 13;
       } else  {
         return false; // unexpected
       }

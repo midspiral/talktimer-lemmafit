@@ -11,7 +11,8 @@ module TalkTimer refines Domain {
     duration: int,      // duration of this take (stored, not computed)
     section: string,    // section label (empty string = unlabeled)
     selected: bool,     // true if this take is selected for total
-    expectedDuration: int  // expected duration from practice template (-1 = none)
+    expectedDuration: int,  // expected duration from practice template (-1 = none)
+    tags: seq<string>   // tags associated with this lap (unique strings)
   )
 
   // Template entry for practice mode
@@ -35,6 +36,8 @@ module TalkTimer refines Domain {
     | AdjustDuration(idx: int, duration: int)  // manually adjust lap duration
     | MoveUp(idx: int)                      // move lap up (swap with previous)
     | MoveDown(idx: int)                    // move lap down (swap with next)
+    | AddTag(idx: int, tag: string)         // add tag to lap (if not present)
+    | RemoveTag(idx: int, tag: string)      // remove tag from lap (if present)
     | SetTemplate(labels: seq<TemplateEntry>)  // set practice template queue
     | ConsumeTemplate                       // label last lap from template, select it
     | ImportLaps(laps: seq<Lap>)            // import multiple laps at once
@@ -43,6 +46,60 @@ module TalkTimer refines Domain {
   //----------------------------------------------------------------------
   // Helpers
   //----------------------------------------------------------------------
+
+  // Check if a tag exists in a sequence
+  predicate TagIn(tag: string, tags: seq<string>) {
+    tag in tags
+  }
+
+  // Add a tag to the sequence if not already present
+  function AddTagToSeq(tags: seq<string>, tag: string): seq<string>
+  {
+    if tag in tags then tags else tags + [tag]
+  }
+
+  // Remove a tag from the sequence (filter out all occurrences)
+  function RemoveTagFromSeq(tags: seq<string>, tag: string): seq<string>
+    decreases |tags|
+  {
+    if |tags| == 0 then []
+    else if tags[0] == tag then RemoveTagFromSeq(tags[1..], tag)
+    else [tags[0]] + RemoveTagFromSeq(tags[1..], tag)
+  }
+
+  // Lemma: AddTagToSeq ensures tag is in result
+  lemma AddTagEnsuresPresence(tags: seq<string>, tag: string)
+    ensures tag in AddTagToSeq(tags, tag)
+  {}
+
+  // Lemma: RemoveTagFromSeq ensures tag is not in result
+  lemma RemoveTagEnsuresAbsence(tags: seq<string>, tag: string)
+    ensures tag !in RemoveTagFromSeq(tags, tag)
+  {
+    if |tags| == 0 {
+    } else if tags[0] == tag {
+      RemoveTagEnsuresAbsence(tags[1..], tag);
+    } else {
+      RemoveTagEnsuresAbsence(tags[1..], tag);
+    }
+  }
+
+  // Lemma: RemoveTagFromSeq preserves other tags
+  lemma RemoveTagPreservesOthers(tags: seq<string>, tag: string, other: string)
+    requires other != tag
+    requires other in tags
+    ensures other in RemoveTagFromSeq(tags, tag)
+  {
+    if |tags| == 0 {
+    } else if tags[0] == tag {
+      assert other in tags[1..];
+      RemoveTagPreservesOthers(tags[1..], tag, other);
+    } else if tags[0] == other {
+      // other is at position 0, preserved
+    } else {
+      RemoveTagPreservesOthers(tags[1..], tag, other);
+    }
+  }
 
   function ClampLap(lap: Lap): Lap
     ensures ClampLap(lap).timestamp >= 0
@@ -54,7 +111,8 @@ module TalkTimer refines Domain {
       if lap.duration >= 0 then lap.duration else 0,
       lap.section,
       lap.selected,
-      if lap.expectedDuration >= -1 then lap.expectedDuration else -1
+      if lap.expectedDuration >= -1 then lap.expectedDuration else -1,
+      lap.tags
     )
   }
 
@@ -103,7 +161,7 @@ module TalkTimer refines Domain {
       case CreateLap =>
         // Record lap with duration from last lap time
         var duration := m.currentTime - m.lastLapTime;
-        var newLap := Lap(m.currentTime, duration, "", false, -1);
+        var newLap := Lap(m.currentTime, duration, "", false, -1, []);
         Model(m.currentTime, m.currentTime, m.laps + [newLap], m.template)
 
       case LabelLap(idx, name) =>
@@ -148,6 +206,24 @@ module TalkTimer refines Domain {
         if 0 <= idx < |m.laps| - 1 then
           var newLaps := m.laps[idx := m.laps[idx+1]][idx+1 := m.laps[idx]];
           Model(m.currentTime, m.lastLapTime, newLaps, m.template)
+        else
+          m
+
+      case AddTag(idx, tag) =>
+        // Add tag to lap if not already present
+        if 0 <= idx < |m.laps| then
+          var newTags := AddTagToSeq(m.laps[idx].tags, tag);
+          Model(m.currentTime, m.lastLapTime,
+                m.laps[idx := m.laps[idx].(tags := newTags)], m.template)
+        else
+          m
+
+      case RemoveTag(idx, tag) =>
+        // Remove tag from lap
+        if 0 <= idx < |m.laps| then
+          var newTags := RemoveTagFromSeq(m.laps[idx].tags, tag);
+          Model(m.currentTime, m.lastLapTime,
+                m.laps[idx := m.laps[idx].(tags := newTags)], m.template)
         else
           m
 
@@ -283,6 +359,48 @@ module TalkTimer refines Domain {
     ensures |Apply(m, MoveUp(idx)).laps| == |m.laps|
     ensures |Apply(m, MoveDown(idx)).laps| == |m.laps|
   {}
+
+  //----------------------------------------------------------------------
+  // Tagging Lemmas
+  //----------------------------------------------------------------------
+
+  // [verified] Adding a tag preserves other lap data
+  lemma AddTagPreservesLapData(m: Model, idx: int, tag: string)
+    requires Inv(m)
+    requires 0 <= idx < |m.laps|
+    ensures Apply(m, AddTag(idx, tag)).laps[idx].timestamp == m.laps[idx].timestamp
+    ensures Apply(m, AddTag(idx, tag)).laps[idx].duration == m.laps[idx].duration
+    ensures Apply(m, AddTag(idx, tag)).laps[idx].section == m.laps[idx].section
+    ensures Apply(m, AddTag(idx, tag)).laps[idx].selected == m.laps[idx].selected
+    ensures Apply(m, AddTag(idx, tag)).laps[idx].expectedDuration == m.laps[idx].expectedDuration
+  {}
+
+  // [verified] Removing a tag preserves other lap data
+  lemma RemoveTagPreservesLapData(m: Model, idx: int, tag: string)
+    requires Inv(m)
+    requires 0 <= idx < |m.laps|
+    ensures Apply(m, RemoveTag(idx, tag)).laps[idx].timestamp == m.laps[idx].timestamp
+    ensures Apply(m, RemoveTag(idx, tag)).laps[idx].duration == m.laps[idx].duration
+    ensures Apply(m, RemoveTag(idx, tag)).laps[idx].section == m.laps[idx].section
+    ensures Apply(m, RemoveTag(idx, tag)).laps[idx].selected == m.laps[idx].selected
+    ensures Apply(m, RemoveTag(idx, tag)).laps[idx].expectedDuration == m.laps[idx].expectedDuration
+  {}
+
+  // [verified] Added tag is present in the lap's tags
+  lemma AddTagAddsTag(m: Model, idx: int, tag: string)
+    requires Inv(m)
+    requires 0 <= idx < |m.laps|
+    ensures TagIn(tag, Apply(m, AddTag(idx, tag)).laps[idx].tags)
+  {}
+
+  // [verified] Removed tag is not present in the lap's tags
+  lemma RemoveTagRemovesTag(m: Model, idx: int, tag: string)
+    requires Inv(m)
+    requires 0 <= idx < |m.laps|
+    ensures !TagIn(tag, Apply(m, RemoveTag(idx, tag)).laps[idx].tags)
+  {
+    RemoveTagEnsuresAbsence(m.laps[idx].tags, tag);
+  }
 
   //----------------------------------------------------------------------
   // Practice Mode Lemmas

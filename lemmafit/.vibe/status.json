@@ -16,8 +16,8 @@
   },
   "axioms": [],
   "compiled": true,
-  "lastCompiled": "2026-02-07T03:22:02.259Z",
-  "specContent": "# Talk Timer Specification\n\nA talk rehearsal timer that tracks lap times, organizes takes by section, and computes optimal talk duration.\n\n## Feature: Timer Core Logic\n\n- [verified] Timer displays elapsed time in minutes and seconds format (MM:SS)\n- [verified] A single tap or keypress creates a lap marker at the current elapsed time\n- [verified] Each lap records the duration from the previous lap marker (or start) to the current marker\n\n## Feature: Session Data Model\n\n- [verified] Sessions are organized hierarchically: a Talk contains Sections, each Section contains one or more Takes\n- [verified] Each lap can be labeled with a section name after it is recorded\n- [verified] All takes are preserved with their timestamps and durations\n\n## Feature: Take Selection & Assembly\n\n- [verified] Users can manually select which takes to include in the final talk total\n- [verified] Users can delete unwanted or noisy takes (without affecting other takes' durations)\n- [verified] Users can manually adjust the duration of any take\n- [verified] Total estimated talk duration is computed by summing the selected takes\n\n## Feature: Lap Reordering\n\n- [verified] Moving a lap up swaps it with the previous lap\n- [verified] Moving a lap down swaps it with the next lap\n- [verified] Moving preserves all lap data (duration, label, selection, expected)\n- [verified] Moving the first lap up has no effect\n- [verified] Moving the last lap down has no effect\n\n## Feature: Practice Mode\n\n- [verified] Starting practice captures section labels as a template queue\n- [verified] Each lap in practice mode consumes one template entry\n- [verified] Consumed template entry sets the lap's section label\n- [verified] Consumed template entry sets the lap's expected duration\n- [verified] Template queue length decreases by one after consumption\n\n## Feature: Import/Export\n\n- [verified] Importing laps preserves existing laps\n- [verified] Imported laps are appended to the end of the lap list\n- [verified] Import is atomic (single undo removes all imported laps)\n\n## Feature: Undo/Redo System\n\n- [verified] All lap, label, select, and delete actions support undo and redo operations\n- [verified] The undo/redo stack preserves complete action history for the session\n\n## Feature: User Interface\n\n- [trusted] The app provides a translucent overlay mode that stays visible but unobtrusive during rehearsal\n- [trusted] Visual design uses soft muted colors for minimal distraction\n- [trusted] A soft visual indicator shows progress toward a target talk duration when set\n- [trusted] Sessions can be exported as Markdown summaries\n\n## Feature: Keyboard & Accessibility\n\n- [trusted] All primary functions are accessible via keyboard shortcuts for hands-free operation\n- [trusted] The app can be quickly shown and hidden during rehearsal\n",
+  "lastCompiled": "2026-02-07T21:09:21.796Z",
+  "specContent": "# Talk Timer Specification\n\nA talk rehearsal timer that tracks lap times, organizes takes by section, and computes optimal talk duration.\n\n## Feature: Timer Core Logic\n\n- [verified] Timer displays elapsed time in minutes and seconds format (MM:SS)\n- [verified] A single tap or keypress creates a lap marker at the current elapsed time\n- [verified] Each lap records the duration from the previous lap marker (or start) to the current marker\n\n## Feature: Session Data Model\n\n- [verified] Sessions are organized hierarchically: a Talk contains Sections, each Section contains one or more Takes\n- [verified] Each lap can be labeled with a section name after it is recorded\n- [verified] All takes are preserved with their timestamps and durations\n\n## Feature: Take Selection & Assembly\n\n- [verified] Users can manually select which takes to include in the final talk total\n- [verified] Users can delete unwanted or noisy takes (without affecting other takes' durations)\n- [verified] Users can manually adjust the duration of any take\n- [verified] Total estimated talk duration is computed by summing the selected takes\n\n## Feature: Lap Reordering\n\n- [verified] Moving a lap up swaps it with the previous lap\n- [verified] Moving a lap down swaps it with the next lap\n- [verified] Moving preserves all lap data (duration, label, selection, expected)\n- [verified] Moving the first lap up has no effect\n- [verified] Moving the last lap down has no effect\n\n## Feature: Practice Mode\n\n- [verified] Starting practice captures section labels as a template queue\n- [verified] Each lap in practice mode consumes one template entry\n- [verified] Consumed template entry sets the lap's section label\n- [verified] Consumed template entry sets the lap's expected duration\n- [verified] Template queue length decreases by one after consumption\n\n## Feature: Import/Export\n\n- [verified] Importing laps preserves existing laps\n- [verified] Imported laps are appended to the end of the lap list\n- [verified] Import is atomic (single undo removes all imported laps)\n\n## Feature: Undo/Redo System\n\n- [verified] All lap, label, select, and delete actions support undo and redo operations\n- [verified] The undo/redo stack preserves complete action history for the session\n\n## Feature: User Interface\n\n- [trusted] The app provides a translucent overlay mode that stays visible but unobtrusive during rehearsal\n- [trusted] Visual design uses soft muted colors for minimal distraction\n- [trusted] A soft visual indicator shows progress toward a target talk duration when set\n- [trusted] Sessions can be exported as Markdown summaries\n\n## Feature: Tagging\n\n- [verified] Each lap can have zero or more tags\n- [verified] Adding a tag to a lap makes it present in the lap's tags\n- [verified] Removing a tag from a lap makes it absent from the lap's tags\n- [verified] Adding a tag to a lap preserves other lap data\n- [verified] Removing a tag from a lap preserves other lap data\n- [trusted] Tags are displayed as chips on each lap\n- [trusted] Users can add tags via a + button\n- [trusted] Total time by tag is displayed for selected laps\n\n## Feature: Keyboard & Accessibility\n\n- [trusted] All primary functions are accessible via keyboard shortcuts for hands-free operation\n- [trusted] The app can be quickly shown and hidden during rehearsal\n",
   "ackedSpecContent": "# Talk Timer Specification\n\nA talk rehearsal timer that tracks lap times, organizes takes by section, and computes optimal talk duration.\n\n## Feature: Timer Core Logic\n\n- [verified] Timer displays elapsed time in minutes and seconds format (MM:SS)\n- [verified] A single tap or keypress creates a lap marker at the current elapsed time\n- [verified] Each lap records the duration from the previous lap marker (or start) to the current marker\n\n## Feature: Session Data Model\n\n- [verified] Sessions are organized hierarchically: a Talk contains Sections, each Section contains one or more Takes\n- [verified] Each lap can be labeled with a section name after it is recorded\n- [verified] All takes are preserved with their timestamps and durations\n\n## Feature: Take Selection & Assembly\n\n- [verified] Users can manually select which takes to include in the final talk total\n- [verified] Users can delete unwanted or noisy takes\n- [verified] Total estimated talk duration is computed by summing the selected takes\n\n## Feature: Undo/Redo System\n\n- [verified] All lap, label, select, and delete actions support undo and redo operations\n- [verified] The undo/redo stack preserves complete action history for the session\n\n## Feature: User Interface\n\n- [trusted] The app provides a translucent overlay mode that stays visible but unobtrusive during rehearsal\n- [trusted] Visual design uses soft muted colors for minimal distraction\n- [trusted] A soft visual indicator shows progress toward a target talk duration when set\n- [trusted] Sessions can be exported as Markdown summaries\n\n## Feature: Keyboard & Accessibility\n\n- [trusted] All primary functions are accessible via keyboard shortcuts for hands-free operation\n- [trusted] The app can be quickly shown and hidden during rehearsal\n",
   "specQueue": [
     {
@@ -262,10 +262,10 @@
       "text": ""
     },
     {
-      "id": "98b7e27b",
+      "id": "cc7e07c3",
       "line": 58,
       "type": "added",
-      "text": "## Feature: Keyboard & Accessibility"
+      "text": "## Feature: Tagging"
     },
     {
       "id": "e6a328f0",
@@ -274,23 +274,89 @@
       "text": ""
     },
     {
-      "id": "c76ec689",
+      "id": "02502254",
       "line": 60,
+      "type": "added",
+      "text": "- [verified] Each lap can have zero or more tags"
+    },
+    {
+      "id": "a58f75d1",
+      "line": 61,
+      "type": "added",
+      "text": "- [verified] Adding a tag to a lap makes it present in the lap's tags"
+    },
+    {
+      "id": "c2d20258",
+      "line": 62,
+      "type": "added",
+      "text": "- [verified] Removing a tag from a lap makes it absent from the lap's tags"
+    },
+    {
+      "id": "ecf649d3",
+      "line": 63,
+      "type": "added",
+      "text": "- [verified] Adding a tag to a lap preserves other lap data"
+    },
+    {
+      "id": "8f39bd43",
+      "line": 64,
+      "type": "added",
+      "text": "- [verified] Removing a tag from a lap preserves other lap data"
+    },
+    {
+      "id": "67166f1e",
+      "line": 65,
+      "type": "added",
+      "text": "- [trusted] Tags are displayed as chips on each lap"
+    },
+    {
+      "id": "10756d44",
+      "line": 66,
+      "type": "added",
+      "text": "- [trusted] Users can add tags via a + button"
+    },
+    {
+      "id": "6b41bb3e",
+      "line": 67,
+      "type": "added",
+      "text": "- [trusted] Total time by tag is displayed for selected laps"
+    },
+    {
+      "id": "844ed2e2",
+      "line": 68,
+      "type": "added",
+      "text": ""
+    },
+    {
+      "id": "0cf9cba7",
+      "line": 69,
+      "type": "added",
+      "text": "## Feature: Keyboard & Accessibility"
+    },
+    {
+      "id": "1110d335",
+      "line": 70,
+      "type": "added",
+      "text": ""
+    },
+    {
+      "id": "185abcbc",
+      "line": 71,
       "type": "added",
       "text": "- [trusted] All primary functions are accessible via keyboard shortcuts for hands-free operation"
     },
     {
-      "id": "6f3fba8a",
-      "line": 61,
+      "id": "43e7101b",
+      "line": 72,
       "type": "added",
       "text": "- [trusted] The app can be quickly shown and hidden during rehearsal"
     },
     {
-      "id": "c2858701",
-      "line": 62,
+      "id": "ff58b7f9",
+      "line": 73,
       "type": "added",
       "text": ""
     }
   ],
-  "timestamp": "2026-02-07T03:22:02.259Z"
+  "timestamp": "2026-02-07T21:09:21.796Z"
 }

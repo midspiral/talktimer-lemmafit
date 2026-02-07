@@ -55,6 +55,17 @@ A talk rehearsal timer that tracks lap times, organizes takes by section, and co
 - [trusted] A soft visual indicator shows progress toward a target talk duration when set
 - [trusted] Sessions can be exported as Markdown summaries
 
+## Feature: Tagging
+
+- [verified] Each lap can have zero or more tags
+- [verified] Adding a tag to a lap makes it present in the lap's tags
+- [verified] Removing a tag from a lap makes it absent from the lap's tags
+- [verified] Adding a tag to a lap preserves other lap data
+- [verified] Removing a tag from a lap preserves other lap data
+- [trusted] Tags are displayed as chips on each lap
+- [trusted] Users can add tags via a + button
+- [trusted] Total time by tag is displayed for selected laps
+
 ## Feature: Keyboard & Accessibility
 
 - [trusted] All primary functions are accessible via keyboard shortcuts for hands-free operation

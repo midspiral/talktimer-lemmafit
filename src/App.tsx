@@ -41,6 +41,23 @@ function getSelectedCount(laps: Lap[]): number {
   return laps.filter(lap => lap.selected).length
 }
 
+// Compute totals by tag for selected laps
+function getTagTotals(laps: Lap[]): { tag: string; total: number; count: number }[] {
+  const tagMap = new Map<string, { total: number; count: number }>()
+
+  for (const lap of laps) {
+    if (!lap.selected) continue
+    for (const tag of lap.tags) {
+      const existing = tagMap.get(tag) || { total: 0, count: 0 }
+      tagMap.set(tag, { total: existing.total + lap.duration, count: existing.count + 1 })
+    }
+  }
+
+  return Array.from(tagMap.entries())
+    .map(([tag, data]) => ({ tag, ...data }))
+    .sort((a, b) => b.total - a.total)
+}
+
 // Generate markdown export of selected laps
 function generateMarkdown(laps: Lap[]): string {
   const lines = laps
@@ -86,10 +103,13 @@ function App() {
   // Editing state
   const [editingLap, setEditingLap] = useState<number | null>(null)
   const [editingDuration, setEditingDuration] = useState<number | null>(null)
+  const [editingTagsIdx, setEditingTagsIdx] = useState<number | null>(null)
   const [editText, setEditText] = useState('')
   const [editDurationText, setEditDurationText] = useState('')
+  const [newTagText, setNewTagText] = useState('')
   const sectionInputRef = useRef<HTMLInputElement>(null)
   const durationInputRef = useRef<HTMLInputElement>(null)
+  const tagInputRef = useRef<HTMLInputElement>(null)
 
 
   // Convert Dafny history to JSON for rendering
@@ -223,6 +243,30 @@ function App() {
     dispatch({ type: 'MoveDown', idx })
   }
 
+  // Add tag to lap
+  const addTag = (idx: number, tag: string) => {
+    const trimmedTag = tag.trim()
+    if (trimmedTag) {
+      dispatch({ type: 'AddTag', idx, tag: trimmedTag })
+    }
+    setNewTagText('')
+    setEditingTagsIdx(null)
+  }
+
+  // Remove tag from lap
+  const removeTag = (idx: number, tag: string) => {
+    dispatch({ type: 'RemoveTag', idx, tag })
+  }
+
+  // Start editing tags for a lap
+  const startEditingTags = (idx: number) => {
+    setEditingTagsIdx(idx)
+    setEditingLap(null)
+    setEditingDuration(null)
+    setNewTagText('')
+    setTimeout(() => tagInputRef.current?.focus(), 0)
+  }
+
   // Import from markdown (paste)
   const importMarkdown = async () => {
     const text = await navigator.clipboard.readText()
@@ -235,7 +279,8 @@ function App() {
       duration,
       section,
       selected: true,
-      expectedDuration: -1
+      expectedDuration: -1,
+      tags: []
     }))
 
     dispatch({ type: 'ImportLaps', laps })
@@ -261,7 +306,7 @@ function App() {
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       // Ignore if editing
-      if (editingLap !== null || editingDuration !== null) return
+      if (editingLap !== null || editingDuration !== null || editingTagsIdx !== null) return
 
       if (e.key === ' ' && !e.metaKey && !e.ctrlKey) {
         e.preventDefault()
@@ -282,10 +327,11 @@ function App() {
 
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [running, editingLap, editingDuration, undo, redo])
+  }, [running, editingLap, editingDuration, editingTagsIdx, undo, redo])
 
   const selectedTotal = getSelectedTotal(model.laps)
   const selectedCount = getSelectedCount(model.laps)
+  const tagTotals = getTagTotals(model.laps)
 
   // Copy markdown to clipboard
   const copyMarkdown = async () => {
@@ -414,6 +460,44 @@ function App() {
                     </span>
                   )}
 
+                  <div className="tag-container">
+                    {lap.tags.map(tag => (
+                      <span key={tag} className="tag-chip">
+                        {tag}
+                        <button
+                          className="tag-remove"
+                          onClick={() => removeTag(idx, tag)}
+                          title="Remove tag"
+                        >
+                          ×
+                        </button>
+                      </span>
+                    ))}
+                    {editingTagsIdx === idx ? (
+                      <input
+                        ref={tagInputRef}
+                        type="text"
+                        value={newTagText}
+                        onChange={e => setNewTagText(e.target.value)}
+                        onBlur={() => addTag(idx, newTagText)}
+                        onKeyDown={e => {
+                          if (e.key === 'Enter') addTag(idx, newTagText)
+                          if (e.key === 'Escape') setEditingTagsIdx(null)
+                        }}
+                        className="tag-input"
+                        placeholder="Tag..."
+                      />
+                    ) : (
+                      <button
+                        className="add-tag-btn"
+                        onClick={() => startEditingTags(idx)}
+                        title="Add tag"
+                      >
+                        +
+                      </button>
+                    )}
+                  </div>
+
                   {lap.expectedDuration >= 0 && (
                     <span className="expected-duration">(expected {formatTime(lap.expectedDuration)})</span>
                   )}
@@ -460,6 +544,20 @@ function App() {
         </div>
       )}
 
+      {tagTotals.length > 0 && (
+        <div className="tag-totals">
+          <h3>By Tag</h3>
+          <div className="tag-totals-list">
+            {tagTotals.map(({ tag, total, count }) => (
+              <div key={tag} className="tag-total-item">
+                <span className="tag-total-name">{tag}</span>
+                <span className="tag-total-time">{formatTime(total)}</span>
+                <span className="tag-total-count">({count})</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
     </div>
   )
