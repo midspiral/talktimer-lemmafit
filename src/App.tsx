@@ -53,6 +53,27 @@ function generateMarkdown(laps: Lap[]): string {
   return lines.join('\n')
 }
 
+// Parse markdown import format: "- [ ] Label (MM:SS)"
+function parseMarkdown(text: string): { section: string; duration: number }[] {
+  const lines = text.split('\n')
+  const results: { section: string; duration: number }[] = []
+
+  for (const line of lines) {
+    // Match "- [ ] Label (MM:SS)" or "- [x] Label (MM:SS)"
+    const match = line.match(/^-\s*\[.\]\s*(.+?)\s*\((\d+:\d+)\)\s*$/)
+    if (match) {
+      const section = match[1].trim()
+      // Skip the Total line
+      if (section.toLowerCase() === 'total') continue
+      const duration = parseTime(match[2])
+      if (duration !== null) {
+        results.push({ section, duration })
+      }
+    }
+  }
+  return results
+}
+
 function App() {
   // Timer state
   const [running, setRunning] = useState(false)
@@ -172,6 +193,41 @@ function App() {
   // Move lap down
   const moveDown = (idx: number) => {
     dispatch({ type: 'MoveDown', idx })
+  }
+
+  // Import from markdown (paste)
+  const importMarkdown = async () => {
+    const text = await navigator.clipboard.readText()
+    const parsed = parseMarkdown(text)
+    if (parsed.length === 0) return
+
+    setDafnyHistory((h: DafnyHistory) => {
+      let currentHistory = h
+      const startIdx = Api.historyToJson(currentHistory).present.laps.length
+
+      // Create all laps first
+      for (let i = 0; i < parsed.length; i++) {
+        const createAction = Api.actionFromJson({ type: 'CreateLap' })
+        currentHistory = Api.Do(currentHistory, createAction)
+      }
+
+      // Then adjust duration, label, and select each
+      for (let i = 0; i < parsed.length; i++) {
+        const idx = startIdx + i
+        const { section, duration } = parsed[i]
+
+        const adjustAction = Api.actionFromJson({ type: 'AdjustDuration', idx, duration })
+        currentHistory = Api.Do(currentHistory, adjustAction)
+
+        const labelAction = Api.actionFromJson({ type: 'LabelLap', idx, name: section })
+        currentHistory = Api.Do(currentHistory, labelAction)
+
+        const selectAction = Api.actionFromJson({ type: 'SelectLap', idx })
+        currentHistory = Api.Do(currentHistory, selectAction)
+      }
+
+      return currentHistory
+    })
   }
 
   // Start editing a lap label
@@ -367,6 +423,12 @@ function App() {
           </button>
         </div>
       )}
+
+      <div className="import-section">
+        <button onClick={importMarkdown} className="import-btn" title="Import from clipboard">
+          Paste Import
+        </button>
+      </div>
 
     </div>
   )
