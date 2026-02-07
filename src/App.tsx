@@ -459,14 +459,14 @@ function App() {
                         if (e.key === 'Escape') setEditingLap(null)
                       }}
                       className="section-input"
-                      placeholder="Section name..."
+                      placeholder=""
                     />
                   ) : (
                     <span
                       className="lap-section"
                       onClick={() => startEditingSection(idx)}
                     >
-                      {lap.section || 'Click to label...'}
+                      {lap.section || '...'}
                     </span>
                   )}
 
@@ -509,7 +509,7 @@ function App() {
                   </div>
 
                   {lap.expectedDuration >= 0 && (
-                    <span className="expected-duration">(expected {formatTime(lap.expectedDuration)})</span>
+                    <span className="expected-duration">(was {formatTime(lap.expectedDuration)})</span>
                   )}
 
                   <button
