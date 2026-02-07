@@ -295,6 +295,10 @@ function App() {
 
   return (
     <div className="app">
+      <button onClick={importMarkdown} className="import-btn" title="Import from clipboard">
+        Paste Import
+      </button>
+
       <div className="timer-display">
         <div className="time">{formatTime(displayTime)}</div>
       </div>
@@ -456,11 +460,6 @@ function App() {
         </div>
       )}
 
-      <div className="import-section">
-        <button onClick={importMarkdown} className="import-btn" title="Import from clipboard">
-          Paste Import
-        </button>
-      </div>
 
     </div>
   )

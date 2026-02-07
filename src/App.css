@@ -375,14 +375,11 @@
   background: #a7f3d0;
 }
 
-/* Import section */
-.import-section {
-  display: flex;
-  justify-content: center;
-  margin-top: 0.75rem;
-}
-
+/* Import button - top right of viewport, hidden on mobile */
 .import-btn {
+  position: fixed;
+  top: 1rem;
+  right: 1rem;
   padding: 0.375rem 0.75rem;
   font-size: 0.75rem;
   font-family: inherit;
@@ -396,4 +393,10 @@
 .import-btn:hover {
   background: #e5e7eb;
   color: #374151;
+}
+
+@media (max-width: 640px) {
+  .import-btn {
+    display: none;
+  }
 }
