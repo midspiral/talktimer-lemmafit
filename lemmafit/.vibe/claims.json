@@ -1,0 +1,587 @@
+{
+  "predicates": [
+    {
+      "name": "Inv",
+      "module": "Domain",
+      "line": 5,
+      "isGhost": true
+    },
+    {
+      "name": "LapsValid",
+      "module": "TalkTimer",
+      "body": "forall i: int {:trigger laps[i]} | 0 <= i < |laps| :: laps[i].timestamp >= 0 && laps[i].duration >= 0",
+      "conjuncts": [
+        "forall i: int {:trigger laps[i]} | 0 <= i < |laps| :: laps[i].timestamp >= 0 && laps[i].duration >= 0"
+      ],
+      "line": 37,
+      "isGhost": true
+    },
+    {
+      "name": "Inv",
+      "module": "TalkTimer",
+      "body": "m.currentTime >= 0 && m.lastLapTime >= 0 && m.lastLapTime <= m.currentTime && LapsValid(m.laps)",
+      "conjuncts": [
+        "m.currentTime >= 0",
+        "m.lastLapTime >= 0",
+        "m.lastLapTime <= m.currentTime",
+        "LapsValid(m.laps)"
+      ],
+      "line": 42,
+      "isGhost": true
+    },
+    {
+      "name": "Inv",
+      "module": "Kernel.D.Abs",
+      "line": 5,
+      "isGhost": true
+    },
+    {
+      "name": "HistInv",
+      "module": "Kernel",
+      "body": "(forall i: int {:trigger h.past[i]} | 0 <= i < |h.past| :: _default.Inv(h.past[i])) && D.Inv(h.present) && forall j: int {:trigger h.future[j]} | 0 <= j < |h.future| :: _default.Inv(h.future[j])",
+      "conjuncts": [
+        "forall i: int {:trigger h.past[i]} | 0 <= i < |h.past| :: _default.Inv(h.past[i])",
+        "D.Inv(h.present)",
+        "forall j: int {:trigger h.future[j]} | 0 <= j < |h.future| :: _default.Inv(h.future[j])"
+      ],
+      "line": 74,
+      "isGhost": true
+    },
+    {
+      "name": "HistInv",
+      "module": "AppCore",
+      "body": "(forall i: int {:trigger h.past[i]} | 0 <= i < |h.past| :: _default.Inv(h.past[i])) && D.Inv(h.present) && forall j: int {:trigger h.future[j]} | 0 <= j < |h.future| :: _default.Inv(h.future[j])",
+      "conjuncts": [
+        "forall i: int {:trigger h.past[i]} | 0 <= i < |h.past| :: _default.Inv(h.past[i])",
+        "D.Inv(h.present)",
+        "forall j: int {:trigger h.future[j]} | 0 <= j < |h.future| :: _default.Inv(h.future[j])"
+      ],
+      "line": 74,
+      "isGhost": true
+    }
+  ],
+  "lemmas": [
+    {
+      "name": "InitSatisfiesInv",
+      "module": "Domain",
+      "requires": [],
+      "ensures": [
+        "Inv(Init())"
+      ],
+      "line": 12
+    },
+    {
+      "name": "StepPreservesInv",
+      "module": "Domain",
+      "requires": [
+        "Inv(m)"
+      ],
+      "ensures": [
+        "Inv(Normalize(Apply(m, a)))"
+      ],
+      "line": 15
+    },
+    {
+      "name": "InitSatisfiesInv",
+      "module": "TalkTimer",
+      "requires": [],
+      "ensures": [
+        "Inv(Init())",
+        "Inv(Init())"
+      ],
+      "line": 114
+    },
+    {
+      "name": "StepPreservesInv",
+      "module": "TalkTimer",
+      "requires": [
+        "Inv(m)"
+      ],
+      "ensures": [
+        "Inv(Normalize(Apply(m, a)))",
+        "Inv(Normalize(Apply(m, a)))"
+      ],
+      "line": 118
+    },
+    {
+      "name": "ElapsedTimeNonNegative",
+      "module": "TalkTimer",
+      "requires": [
+        "Inv(m)"
+      ],
+      "ensures": [
+        "m.currentTime >= 0"
+      ],
+      "line": 127
+    },
+    {
+      "name": "LapDurationsNonNegative",
+      "module": "TalkTimer",
+      "requires": [
+        "Inv(m)"
+      ],
+      "ensures": [
+        "forall i: int {:trigger m.laps[i]} | 0 <= i < |m.laps| :: m.laps[i].duration >= 0"
+      ],
+      "line": 133
+    },
+    {
+      "name": "DeletePreservesDurations",
+      "module": "TalkTimer",
+      "requires": [
+        "Inv(m)",
+        "0 <= idx < |m.laps|"
+      ],
+      "ensures": [
+        "forall i: int {:trigger m.laps[i]} {:trigger Apply(m, DeleteLap(idx)).laps[i]} | 0 <= i < idx :: Apply(m, DeleteLap(idx)).laps[i].duration == m.laps[i].duration",
+        "forall i: int {:trigger m.laps[i]} | idx < i < |m.laps| :: Apply(m, DeleteLap(idx)).laps[i - 1].duration == m.laps[i].duration"
+      ],
+      "line": 139
+    },
+    {
+      "name": "AdjustOnlyChangesDuration",
+      "module": "TalkTimer",
+      "requires": [
+        "Inv(m)",
+        "0 <= idx < |m.laps|",
+        "dur >= 0"
+      ],
+      "ensures": [
+        "Apply(m, AdjustDuration(idx, dur)).laps[idx].duration == dur",
+        "Apply(m, AdjustDuration(idx, dur)).laps[idx].section == m.laps[idx].section",
+        "Apply(m, AdjustDuration(idx, dur)).laps[idx].selected == m.laps[idx].selected"
+      ],
+      "line": 149
+    },
+    {
+      "name": "SelectLapToggles",
+      "module": "TalkTimer",
+      "requires": [
+        "Inv(m)",
+        "0 <= idx < |m.laps|"
+      ],
+      "ensures": [
+        "Apply(m, SelectLap(idx)).laps[idx].selected == !m.laps[idx].selected"
+      ],
+      "line": 159
+    },
+    {
+      "name": "DeleteLapReducesCount",
+      "module": "TalkTimer",
+      "requires": [
+        "Inv(m)",
+        "0 <= idx < |m.laps|"
+      ],
+      "ensures": [
+        "|Apply(m, DeleteLap(idx)).laps| == |m.laps| - 1"
+      ],
+      "line": 166
+    },
+    {
+      "name": "SumOfNonNegativeIsNonNegative",
+      "module": "TalkTimer",
+      "requires": [
+        "forall i: int {:trigger s[i]} | 0 <= i < |s| :: s[i] >= 0"
+      ],
+      "ensures": [
+        "Sum(s) >= 0"
+      ],
+      "line": 183
+    },
+    {
+      "name": "SelectedTotalIsNonNegative",
+      "module": "TalkTimer",
+      "requires": [
+        "forall i: int {:trigger durations[i]} | 0 <= i < |durations| :: durations[i] >= 0"
+      ],
+      "ensures": [
+        "Sum(durations) >= 0"
+      ],
+      "line": 194
+    },
+    {
+      "name": "InitSatisfiesInv",
+      "module": "Kernel.D.Abs",
+      "requires": [],
+      "ensures": [
+        "Inv(Init())"
+      ],
+      "line": 12
+    },
+    {
+      "name": "StepPreservesInv",
+      "module": "Kernel.D.Abs",
+      "requires": [
+        "Inv(m)"
+      ],
+      "ensures": [
+        "Inv(Normalize(Apply(m, a)))"
+      ],
+      "line": 15
+    },
+    {
+      "name": "DoPreservesInv",
+      "module": "Kernel",
+      "requires": [
+        "D.Inv(h.present)"
+      ],
+      "ensures": [
+        "D.Inv(Do(h, a).present)"
+      ],
+      "line": 67
+    },
+    {
+      "name": "InitHistorySatisfiesInv",
+      "module": "Kernel",
+      "requires": [],
+      "ensures": [
+        "HistInv(InitHistory())"
+      ],
+      "line": 80
+    },
+    {
+      "name": "UndoPreservesHistInv",
+      "module": "Kernel",
+      "requires": [
+        "HistInv(h)"
+      ],
+      "ensures": [
+        "HistInv(Undo(h))"
+      ],
+      "line": 86
+    },
+    {
+      "name": "RedoPreservesHistInv",
+      "module": "Kernel",
+      "requires": [
+        "HistInv(h)"
+      ],
+      "ensures": [
+        "HistInv(Redo(h))"
+      ],
+      "line": 92
+    },
+    {
+      "name": "DoPreservesHistInv",
+      "module": "Kernel",
+      "requires": [
+        "HistInv(h)"
+      ],
+      "ensures": [
+        "HistInv(Do(h, a))"
+      ],
+      "line": 98
+    },
+    {
+      "name": "PreviewPreservesHistInv",
+      "module": "Kernel",
+      "requires": [
+        "HistInv(h)"
+      ],
+      "ensures": [
+        "HistInv(Preview(h, a))"
+      ],
+      "line": 105
+    },
+    {
+      "name": "CommitFromPreservesHistInv",
+      "module": "Kernel",
+      "requires": [
+        "HistInv(h)",
+        "D.Inv(baseline)"
+      ],
+      "ensures": [
+        "HistInv(CommitFrom(h, baseline))"
+      ],
+      "line": 112
+    },
+    {
+      "name": "DoHasNoRedoBranch",
+      "module": "Kernel",
+      "requires": [
+        "HistInv(h)"
+      ],
+      "ensures": [
+        "Redo(Do(h, a)) == Do(h, a)"
+      ],
+      "line": 120
+    },
+    {
+      "name": "UndoRedoRoundTrip",
+      "module": "Kernel",
+      "requires": [
+        "|h.past| > 0"
+      ],
+      "ensures": [
+        "Redo(Undo(h)) == h"
+      ],
+      "line": 126
+    },
+    {
+      "name": "RedoUndoRoundTrip",
+      "module": "Kernel",
+      "requires": [
+        "|h.future| > 0"
+      ],
+      "ensures": [
+        "Undo(Redo(h)) == h"
+      ],
+      "line": 131
+    },
+    {
+      "name": "UndoAtBeginningIsNoOp",
+      "module": "Kernel",
+      "requires": [
+        "|h.past| == 0"
+      ],
+      "ensures": [
+        "Undo(h) == h"
+      ],
+      "line": 137
+    },
+    {
+      "name": "RedoAtEndIsNoOp",
+      "module": "Kernel",
+      "requires": [
+        "|h.future| == 0"
+      ],
+      "ensures": [
+        "Redo(h) == h"
+      ],
+      "line": 142
+    },
+    {
+      "name": "DoPreservesInv",
+      "module": "AppCore",
+      "requires": [
+        "D.Inv(h.present)"
+      ],
+      "ensures": [
+        "D.Inv(Do(h, a).present)"
+      ],
+      "line": 67
+    },
+    {
+      "name": "InitHistorySatisfiesInv",
+      "module": "AppCore",
+      "requires": [],
+      "ensures": [
+        "HistInv(InitHistory())"
+      ],
+      "line": 80
+    },
+    {
+      "name": "UndoPreservesHistInv",
+      "module": "AppCore",
+      "requires": [
+        "HistInv(h)"
+      ],
+      "ensures": [
+        "HistInv(Undo(h))"
+      ],
+      "line": 86
+    },
+    {
+      "name": "RedoPreservesHistInv",
+      "module": "AppCore",
+      "requires": [
+        "HistInv(h)"
+      ],
+      "ensures": [
+        "HistInv(Redo(h))"
+      ],
+      "line": 92
+    },
+    {
+      "name": "DoPreservesHistInv",
+      "module": "AppCore",
+      "requires": [
+        "HistInv(h)"
+      ],
+      "ensures": [
+        "HistInv(Do(h, a))"
+      ],
+      "line": 98
+    },
+    {
+      "name": "PreviewPreservesHistInv",
+      "module": "AppCore",
+      "requires": [
+        "HistInv(h)"
+      ],
+      "ensures": [
+        "HistInv(Preview(h, a))"
+      ],
+      "line": 105
+    },
+    {
+      "name": "CommitFromPreservesHistInv",
+      "module": "AppCore",
+      "requires": [
+        "HistInv(h)",
+        "D.Inv(baseline)"
+      ],
+      "ensures": [
+        "HistInv(CommitFrom(h, baseline))"
+      ],
+      "line": 112
+    },
+    {
+      "name": "DoHasNoRedoBranch",
+      "module": "AppCore",
+      "requires": [
+        "HistInv(h)"
+      ],
+      "ensures": [
+        "Redo(Do(h, a)) == Do(h, a)"
+      ],
+      "line": 120
+    },
+    {
+      "name": "UndoRedoRoundTrip",
+      "module": "AppCore",
+      "requires": [
+        "|h.past| > 0"
+      ],
+      "ensures": [
+        "Redo(Undo(h)) == h"
+      ],
+      "line": 126
+    },
+    {
+      "name": "RedoUndoRoundTrip",
+      "module": "AppCore",
+      "requires": [
+        "|h.future| > 0"
+      ],
+      "ensures": [
+        "Undo(Redo(h)) == h"
+      ],
+      "line": 131
+    },
+    {
+      "name": "UndoAtBeginningIsNoOp",
+      "module": "AppCore",
+      "requires": [
+        "|h.past| == 0"
+      ],
+      "ensures": [
+        "Undo(h) == h"
+      ],
+      "line": 137
+    },
+    {
+      "name": "RedoAtEndIsNoOp",
+      "module": "AppCore",
+      "requires": [
+        "|h.future| == 0"
+      ],
+      "ensures": [
+        "Redo(h) == h"
+      ],
+      "line": 142
+    }
+  ],
+  "functions": [
+    {
+      "name": "Apply",
+      "module": "Domain",
+      "requires": [
+        "Inv(m)"
+      ],
+      "ensures": [],
+      "line": 8
+    },
+    {
+      "name": "Init",
+      "module": "TalkTimer",
+      "requires": [],
+      "ensures": [
+        "Inv(Init())"
+      ],
+      "line": 53
+    },
+    {
+      "name": "Apply",
+      "module": "TalkTimer",
+      "requires": [
+        "Inv(m)"
+      ],
+      "ensures": [],
+      "line": 59
+    },
+    {
+      "name": "Sum",
+      "module": "TalkTimer",
+      "requires": [],
+      "ensures": [
+        "|s| == 0 ==> Sum(s) == 0"
+      ],
+      "line": 176
+    },
+    {
+      "name": "Apply",
+      "module": "Kernel.D.Abs",
+      "requires": [
+        "Inv(m)"
+      ],
+      "ensures": [],
+      "line": 8
+    },
+    {
+      "name": "Step",
+      "module": "Kernel",
+      "requires": [
+        "D.Inv(m)"
+      ],
+      "ensures": [],
+      "line": 23
+    },
+    {
+      "name": "Do",
+      "module": "Kernel",
+      "requires": [
+        "D.Inv(h.present)"
+      ],
+      "ensures": [],
+      "line": 36
+    },
+    {
+      "name": "Preview",
+      "module": "Kernel",
+      "requires": [
+        "D.Inv(h.present)"
+      ],
+      "ensures": [],
+      "line": 43
+    },
+    {
+      "name": "Step",
+      "module": "AppCore",
+      "requires": [
+        "D.Inv(m)"
+      ],
+      "ensures": [],
+      "line": 23
+    },
+    {
+      "name": "Do",
+      "module": "AppCore",
+      "requires": [
+        "D.Inv(h.present)"
+      ],
+      "ensures": [],
+      "line": 36
+    },
+    {
+      "name": "Preview",
+      "module": "AppCore",
+      "requires": [
+        "D.Inv(h.present)"
+      ],
+      "ensures": [],
+      "line": 43
+    }
+  ],
+  "axioms": []
+}

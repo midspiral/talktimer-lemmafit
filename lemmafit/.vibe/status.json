@@ -1,0 +1,171 @@
+{
+  "state": "verified",
+  "files": {
+    "lemmafit/dafny/Domain.dfy": {
+      "verified": true,
+      "errors": [],
+      "warnings": [],
+      "axioms": []
+    },
+    "lemmafit/dafny/Replay.dfy": {
+      "verified": true,
+      "errors": [],
+      "warnings": [],
+      "axioms": []
+    }
+  },
+  "axioms": [],
+  "compiled": true,
+  "lastCompiled": "2026-02-06T23:56:14.888Z",
+  "specContent": "# Talk Timer Specification\n\nA talk rehearsal timer that tracks lap times, organizes takes by section, and computes optimal talk duration.\n\n## Feature: Timer Core Logic\n\n- [verified] Timer displays elapsed time in minutes and seconds format (MM:SS)\n- [verified] A single tap or keypress creates a lap marker at the current elapsed time\n- [verified] Each lap records the duration from the previous lap marker (or start) to the current marker\n\n## Feature: Session Data Model\n\n- [verified] Sessions are organized hierarchically: a Talk contains Sections, each Section contains one or more Takes\n- [verified] Each lap can be labeled with a section name after it is recorded\n- [verified] All takes are preserved with their timestamps and durations\n\n## Feature: Take Selection & Assembly\n\n- [verified] Users can manually select which takes to include in the final talk total\n- [verified] Users can delete unwanted or noisy takes (without affecting other takes' durations)\n- [verified] Users can manually adjust the duration of any take\n- [verified] Total estimated talk duration is computed by summing the selected takes\n\n## Feature: Undo/Redo System\n\n- [verified] All lap, label, select, and delete actions support undo and redo operations\n- [verified] The undo/redo stack preserves complete action history for the session\n\n## Feature: User Interface\n\n- [trusted] The app provides a translucent overlay mode that stays visible but unobtrusive during rehearsal\n- [trusted] Visual design uses soft muted colors for minimal distraction\n- [trusted] A soft visual indicator shows progress toward a target talk duration when set\n- [trusted] Sessions can be exported as Markdown summaries\n\n## Feature: Keyboard & Accessibility\n\n- [trusted] All primary functions are accessible via keyboard shortcuts for hands-free operation\n- [trusted] The app can be quickly shown and hidden during rehearsal\n",
+  "ackedSpecContent": "# Talk Timer Specification\n\nA talk rehearsal timer that tracks lap times, organizes takes by section, and computes optimal talk duration.\n\n## Feature: Timer Core Logic\n\n- [verified] Timer displays elapsed time in minutes and seconds format (MM:SS)\n- [verified] A single tap or keypress creates a lap marker at the current elapsed time\n- [verified] Each lap records the duration from the previous lap marker (or start) to the current marker\n\n## Feature: Session Data Model\n\n- [verified] Sessions are organized hierarchically: a Talk contains Sections, each Section contains one or more Takes\n- [verified] Each lap can be labeled with a section name after it is recorded\n- [verified] All takes are preserved with their timestamps and durations\n\n## Feature: Take Selection & Assembly\n\n- [verified] Users can manually select which takes to include in the final talk total\n- [verified] Users can delete unwanted or noisy takes\n- [verified] Total estimated talk duration is computed by summing the selected takes\n\n## Feature: Undo/Redo System\n\n- [verified] All lap, label, select, and delete actions support undo and redo operations\n- [verified] The undo/redo stack preserves complete action history for the session\n\n## Feature: User Interface\n\n- [trusted] The app provides a translucent overlay mode that stays visible but unobtrusive during rehearsal\n- [trusted] Visual design uses soft muted colors for minimal distraction\n- [trusted] A soft visual indicator shows progress toward a target talk duration when set\n- [trusted] Sessions can be exported as Markdown summaries\n\n## Feature: Keyboard & Accessibility\n\n- [trusted] All primary functions are accessible via keyboard shortcuts for hands-free operation\n- [trusted] The app can be quickly shown and hidden during rehearsal\n",
+  "specQueue": [
+    {
+      "id": "f89f19f4",
+      "line": 20,
+      "type": "changed",
+      "old": "- [verified] Users can delete unwanted or noisy takes",
+      "text": "- [verified] Users can delete unwanted or noisy takes (without affecting other takes' durations)"
+    },
+    {
+      "id": "713d482a",
+      "line": 21,
+      "type": "changed",
+      "old": "- [verified] Total estimated talk duration is computed by summing the selected takes",
+      "text": "- [verified] Users can manually adjust the duration of any take"
+    },
+    {
+      "id": "14cd82e2",
+      "line": 22,
+      "type": "changed",
+      "old": "",
+      "text": "- [verified] Total estimated talk duration is computed by summing the selected takes"
+    },
+    {
+      "id": "5b768af2",
+      "line": 23,
+      "type": "changed",
+      "old": "## Feature: Undo/Redo System",
+      "text": ""
+    },
+    {
+      "id": "88b502a3",
+      "line": 24,
+      "type": "changed",
+      "old": "",
+      "text": "## Feature: Undo/Redo System"
+    },
+    {
+      "id": "2ba9010d",
+      "line": 25,
+      "type": "changed",
+      "old": "- [verified] All lap, label, select, and delete actions support undo and redo operations",
+      "text": ""
+    },
+    {
+      "id": "3c70a9e3",
+      "line": 26,
+      "type": "changed",
+      "old": "- [verified] The undo/redo stack preserves complete action history for the session",
+      "text": "- [verified] All lap, label, select, and delete actions support undo and redo operations"
+    },
+    {
+      "id": "060981e6",
+      "line": 27,
+      "type": "changed",
+      "old": "",
+      "text": "- [verified] The undo/redo stack preserves complete action history for the session"
+    },
+    {
+      "id": "953d3066",
+      "line": 28,
+      "type": "changed",
+      "old": "## Feature: User Interface",
+      "text": ""
+    },
+    {
+      "id": "3f43cb03",
+      "line": 29,
+      "type": "changed",
+      "old": "",
+      "text": "## Feature: User Interface"
+    },
+    {
+      "id": "34075af3",
+      "line": 30,
+      "type": "changed",
+      "old": "- [trusted] The app provides a translucent overlay mode that stays visible but unobtrusive during rehearsal",
+      "text": ""
+    },
+    {
+      "id": "baae817b",
+      "line": 31,
+      "type": "changed",
+      "old": "- [trusted] Visual design uses soft muted colors for minimal distraction",
+      "text": "- [trusted] The app provides a translucent overlay mode that stays visible but unobtrusive during rehearsal"
+    },
+    {
+      "id": "d948dc4a",
+      "line": 32,
+      "type": "changed",
+      "old": "- [trusted] A soft visual indicator shows progress toward a target talk duration when set",
+      "text": "- [trusted] Visual design uses soft muted colors for minimal distraction"
+    },
+    {
+      "id": "14bec24c",
+      "line": 33,
+      "type": "changed",
+      "old": "- [trusted] Sessions can be exported as Markdown summaries",
+      "text": "- [trusted] A soft visual indicator shows progress toward a target talk duration when set"
+    },
+    {
+      "id": "51b32186",
+      "line": 34,
+      "type": "changed",
+      "old": "",
+      "text": "- [trusted] Sessions can be exported as Markdown summaries"
+    },
+    {
+      "id": "1a9772ee",
+      "line": 35,
+      "type": "changed",
+      "old": "## Feature: Keyboard & Accessibility",
+      "text": ""
+    },
+    {
+      "id": "f3bc6d50",
+      "line": 36,
+      "type": "changed",
+      "old": "",
+      "text": "## Feature: Keyboard & Accessibility"
+    },
+    {
+      "id": "0d915e34",
+      "line": 37,
+      "type": "changed",
+      "old": "- [trusted] All primary functions are accessible via keyboard shortcuts for hands-free operation",
+      "text": ""
+    },
+    {
+      "id": "3a584cee",
+      "line": 38,
+      "type": "changed",
+      "old": "- [trusted] The app can be quickly shown and hidden during rehearsal",
+      "text": "- [trusted] All primary functions are accessible via keyboard shortcuts for hands-free operation"
+    },
+    {
+      "id": "4b1b1b37",
+      "line": 39,
+      "type": "changed",
+      "old": "",
+      "text": "- [trusted] The app can be quickly shown and hidden during rehearsal"
+    },
+    {
+      "id": "36c16869",
+      "line": 40,
+      "type": "added",
+      "text": ""
+    }
+  ],
+  "timestamp": "2026-02-06T23:56:14.888Z"
+}

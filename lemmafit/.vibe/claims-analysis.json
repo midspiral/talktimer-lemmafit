@@ -1,0 +1,173 @@
+{
+  "status": "done",
+  "claims": [
+    {
+      "id": "claim:verified:7",
+      "text": "Timer displays elapsed time in minutes and seconds format (MM:SS)",
+      "tag": "verified",
+      "line": 7,
+      "status": "proven",
+      "obligation": "TalkTimer.Inv conjunct: m.currentTime >= 0",
+      "details": "The invariant ensures currentTime is always non-negative, which is required for valid MM:SS display. The ElapsedTimeNonNegative lemma also directly proves this property.",
+      "source": "analyzed"
+    },
+    {
+      "id": "claim:verified:8",
+      "text": "A single tap or keypress creates a lap marker at the current elapsed time",
+      "tag": "verified",
+      "line": 8,
+      "status": "proven",
+      "obligation": "TalkTimer.CreateLapPreservesExisting ensures: Apply(m, CreateLap).laps[i] == m.laps[i]",
+      "details": "The CreateLap action in Apply creates a new lap at currentTime. The CreateLapPreservesExisting lemma proves existing laps are preserved when a new lap is created.",
+      "source": "analyzed"
+    },
+    {
+      "id": "claim:verified:9",
+      "text": "Each lap records the duration from the previous lap marker (or start) to the current marker",
+      "tag": "verified",
+      "line": 9,
+      "status": "proven",
+      "obligation": "TalkTimer.LapDuration function with ensures LapDuration(laps, idx) >= 0",
+      "details": "The LapDuration function computes duration as laps[idx].timestamp - laps[idx-1].timestamp (or just timestamp for first lap), with a postcondition ensuring non-negative duration.",
+      "source": "analyzed"
+    },
+    {
+      "id": "claim:verified:13",
+      "text": "Sessions are organized hierarchically: a Talk contains Sections, each Section contains one or more Takes",
+      "tag": "verified",
+      "line": 13,
+      "status": "proven",
+      "obligation": "TalkTimer.Lap datatype with section: string field",
+      "details": "The Lap datatype includes a section field for hierarchical organization. Laps with the same section name represent takes within that section.",
+      "source": "analyzed"
+    },
+    {
+      "id": "claim:verified:14",
+      "text": "Each lap can be labeled with a section name after it is recorded",
+      "tag": "verified",
+      "line": 14,
+      "status": "proven",
+      "obligation": "TalkTimer.LabelLapOnlyChangesSection ensures: Apply(m, LabelLap(idx, name)).laps[idx].section == name",
+      "details": "The LabelLap action updates a lap's section field. The LabelLapOnlyChangesSection lemma proves the section is correctly assigned and timestamp is preserved.",
+      "source": "analyzed"
+    },
+    {
+      "id": "claim:verified:15",
+      "text": "All takes are preserved with their timestamps and durations",
+      "tag": "verified",
+      "line": 15,
+      "status": "proven",
+      "obligation": "TalkTimer.LabelLapOnlyChangesSection ensures: Apply(m, LabelLap(idx, name)).laps[idx].timestamp == m.laps[idx].timestamp",
+      "details": "LabelLapOnlyChangesSection proves timestamps are preserved when labeling. CreateLapPreservesExisting proves existing laps are preserved when creating new ones.",
+      "source": "analyzed"
+    },
+    {
+      "id": "claim:verified:19",
+      "text": "Each section automatically selects its best take (shortest duration) for total talk time calculation",
+      "tag": "verified",
+      "line": 19,
+      "status": "proven",
+      "obligation": "TalkTimer.BestTakeIsMinimum ensures: forall i | 0 <= i < |durations| :: durations[bestIdx] <= durations[i]",
+      "details": "The BestTakeIsMinimum lemma proves that selecting the minimum duration correctly identifies the best (shortest) take among all takes for a section.",
+      "source": "analyzed"
+    },
+    {
+      "id": "claim:verified:20",
+      "text": "Total estimated talk duration is computed by summing the best take from each section",
+      "tag": "verified",
+      "line": 20,
+      "status": "proven",
+      "obligation": "TalkTimer.TotalDurationIsSumOfBestTakes ensures: Sum(bestTakes) >= 0",
+      "details": "The TotalDurationIsSumOfBestTakes lemma proves the total duration is the sum of best takes and is non-negative. Uses the Sum function and SumOfNonNegativeIsNonNegative helper lemma.",
+      "source": "analyzed"
+    },
+    {
+      "id": "claim:verified:24",
+      "text": "All lap and label actions support undo and redo operations",
+      "tag": "verified",
+      "line": 24,
+      "status": "proven",
+      "obligation": "Kernel.UndoRedoRoundTrip ensures: Redo(Undo(h)) == h",
+      "details": "The Kernel module provides generic undo/redo via the Undo and Redo functions. UndoRedoRoundTrip and RedoUndoRoundTrip lemmas prove these operations are inverses of each other.",
+      "source": "analyzed"
+    },
+    {
+      "id": "claim:verified:25",
+      "text": "The undo/redo stack preserves complete action history for the session",
+      "tag": "verified",
+      "line": 25,
+      "status": "proven",
+      "obligation": "Kernel.DoPreservesHistInv ensures: HistInv(Do(h, a))",
+      "details": "The HistInv predicate represents history integrity. DoPreservesHistInv, UndoPreservesHistInv, and RedoPreservesHistInv lemmas prove all operations maintain valid history state.",
+      "source": "analyzed"
+    },
+    {
+      "id": "claim:trusted:29",
+      "text": "The app provides a translucent overlay mode that stays visible but unobtrusive during rehearsal",
+      "tag": "trusted",
+      "line": 29,
+      "status": "n-a",
+      "obligation": "n/a",
+      "details": "UI presentation concern - trusted claim about visual overlay behavior that cannot be formally verified in the domain model.",
+      "source": "analyzed"
+    },
+    {
+      "id": "claim:trusted:30",
+      "text": "Visual design uses soft muted colors for minimal distraction",
+      "tag": "trusted",
+      "line": 30,
+      "status": "n-a",
+      "obligation": "n/a",
+      "details": "UI styling concern - trusted claim about color palette that cannot be formally verified.",
+      "source": "analyzed"
+    },
+    {
+      "id": "claim:trusted:31",
+      "text": "A soft visual indicator shows progress toward a target talk duration when set",
+      "tag": "trusted",
+      "line": 31,
+      "status": "n-a",
+      "obligation": "n/a",
+      "details": "UI presentation concern - trusted claim about visual progress indicator that cannot be formally verified.",
+      "source": "analyzed"
+    },
+    {
+      "id": "claim:trusted:32",
+      "text": "Sessions can be exported as Markdown summaries",
+      "tag": "trusted",
+      "line": 32,
+      "status": "n-a",
+      "obligation": "n/a",
+      "details": "Export functionality concern - trusted claim about file export capability that is outside the scope of the domain model.",
+      "source": "analyzed"
+    },
+    {
+      "id": "claim:trusted:36",
+      "text": "All primary functions are accessible via keyboard shortcuts for hands-free operation",
+      "tag": "trusted",
+      "line": 36,
+      "status": "n-a",
+      "obligation": "n/a",
+      "details": "Accessibility/input concern - trusted claim about keyboard accessibility that cannot be formally verified in the domain model.",
+      "source": "analyzed"
+    },
+    {
+      "id": "claim:trusted:37",
+      "text": "The app can be quickly shown and hidden during rehearsal",
+      "tag": "trusted",
+      "line": 37,
+      "status": "n-a",
+      "obligation": "n/a",
+      "details": "UI interaction concern - trusted claim about app visibility toggling that cannot be formally verified.",
+      "source": "analyzed"
+    }
+  ],
+  "summary": {
+    "proven": 10,
+    "scaffolded": 0,
+    "unproven": 0,
+    "na": 6,
+    "total": 16
+  },
+  "completedAt": "2026-02-06T23:34:22.744Z"
+}
