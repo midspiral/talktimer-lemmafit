@@ -352,7 +352,8 @@ function App() {
   return (
     <div className="app">
       <button onClick={importMarkdown} className="import-btn" title="Import from clipboard">
-        Paste Import
+        <span className="import-icon">📋</span>
+        <span className="import-text">Paste Import</span>
       </button>
 
       <div className="timer-display">
@@ -549,7 +550,8 @@ function App() {
           <span className="total-time">{formatTime(selectedTotal)}</span>
           <span className="total-count">({selectedCount} takes)</span>
           <button onClick={copyMarkdown} className="copy-btn" title="Copy as Markdown">
-            Copy
+            <span className="copy-icon">📄</span>
+            <span className="copy-text">Copy</span>
           </button>
         </div>
       )}
