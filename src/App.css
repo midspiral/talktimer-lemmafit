@@ -307,12 +307,3 @@
   background: #c6f6d5;
 }
 
-/* Shortcuts hint */
-.shortcuts {
-  text-align: center;
-  color: #a0aec0;
-}
-
-.shortcuts small {
-  font-size: 0.75rem;
-}

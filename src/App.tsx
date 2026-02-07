@@ -338,11 +338,6 @@ function App() {
         </div>
       )}
 
-      <div className="shortcuts">
-        <small>
-          Space: {running ? 'Lap' : 'Start'} | Cmd+Z: Undo | Cmd+Shift+Z: Redo
-        </small>
-      </div>
     </div>
   )
 }
