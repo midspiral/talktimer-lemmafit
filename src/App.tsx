@@ -49,6 +49,7 @@ function generateMarkdown(laps: Lap[]): string {
       const label = lap.section || 'Untitled'
       return `- [ ] ${label} (${formatTime(lap.duration)})`
     })
+  lines.push(`- [ ] Total (${formatTime(getSelectedTotal(laps))})`)
   return lines.join('\n')
 }
 
