@@ -1,0 +1,203 @@
+{
+  "status": "done",
+  "findings": [
+    {
+      "severity": "ok",
+      "message": "Timer displays elapsed time: Covered by ElapsedTimeNonNegative lemma and Model.currentTime field"
+    },
+    {
+      "severity": "ok",
+      "message": "Single tap creates lap marker: Covered by CreateLap action"
+    },
+    {
+      "severity": "ok",
+      "message": "Each lap records duration from previous marker: Covered by CreateLap action implementation (duration := m.currentTime - m.lastLapTime)"
+    },
+    {
+      "severity": "ok",
+      "message": "Sessions organized hierarchically: Model structure with laps sequence covers this"
+    },
+    {
+      "severity": "ok",
+      "message": "Laps can be labeled with section name: Covered by LabelLap action"
+    },
+    {
+      "severity": "ok",
+      "message": "All takes preserved with timestamps and durations: Covered by Lap datatype with timestamp and duration fields"
+    },
+    {
+      "severity": "ok",
+      "message": "Users can manually select takes: Covered by SelectLap action and SelectLapToggles lemma"
+    },
+    {
+      "severity": "ok",
+      "message": "Users can delete unwanted takes: Covered by DeleteLap action and DeletePreservesDurations lemma"
+    },
+    {
+      "severity": "ok",
+      "message": "Users can manually adjust duration: Covered by AdjustDuration action and AdjustOnlyChangesDuration lemma"
+    },
+    {
+      "severity": "ok",
+      "message": "Total estimated duration computed by summing selected: Covered by SelectedTotal function and SelectedTotalCorrect lemma"
+    },
+    {
+      "severity": "ok",
+      "message": "Selected total equals sum of selected lap durations: Covered by SelectedTotalCorrect lemma"
+    },
+    {
+      "severity": "ok",
+      "message": "Selected total is non-negative: Covered by SelectedTotalNonNegative lemma"
+    },
+    {
+      "severity": "ok",
+      "message": "Moving lap up swaps with previous: Covered by MoveUp action and MoveUpSwaps lemma"
+    },
+    {
+      "severity": "ok",
+      "message": "Moving lap down swaps with next: Covered by MoveDown action and MoveDownSwaps lemma"
+    },
+    {
+      "severity": "ok",
+      "message": "Moving preserves all lap data: Covered by MoveUpSwaps/MoveDownSwaps lemmas (swaps preserve complete Lap objects)"
+    },
+    {
+      "severity": "ok",
+      "message": "Moving first lap up has no effect: Covered by MoveUpFirstNoEffect lemma"
+    },
+    {
+      "severity": "ok",
+      "message": "Moving last lap down has no effect: Covered by MoveDownLastNoEffect lemma"
+    },
+    {
+      "severity": "ok",
+      "message": "Starting practice captures section labels as template: Covered by SetTemplate action"
+    },
+    {
+      "severity": "ok",
+      "message": "Each lap in practice mode consumes one template entry: Covered by ConsumeTemplate action"
+    },
+    {
+      "severity": "ok",
+      "message": "Consumed template sets lap's section label: Covered by ConsumeTemplateSetsLabel lemma"
+    },
+    {
+      "severity": "ok",
+      "message": "Consumed template sets lap's expected duration: Covered by ConsumeTemplateSetsExpected lemma"
+    },
+    {
+      "severity": "ok",
+      "message": "Consumed template sets lap's tags: Covered by ConsumeTemplateSetsTags lemma"
+    },
+    {
+      "severity": "ok",
+      "message": "Template queue length decreases by one: Covered by ConsumeTemplateDecreasesQueue lemma"
+    },
+    {
+      "severity": "ok",
+      "message": "Consuming template sets all fields: Covered by ConsumeTemplateRoundTrip lemma"
+    },
+    {
+      "severity": "ok",
+      "message": "Consuming template preserves original lap duration: Covered by ConsumeTemplatePreservesDuration lemma"
+    },
+    {
+      "severity": "ok",
+      "message": "Consuming template preserves original lap timestamp: Covered by ConsumeTemplatePreservesTimestamp lemma"
+    },
+    {
+      "severity": "ok",
+      "message": "Reset in practice mode restores original template as laps: Covered by ResetRestoresOriginalTemplate lemma"
+    },
+    {
+      "severity": "ok",
+      "message": "Reset in practice mode clears both template and originalTemplate: Covered by ResetClearsTemplate lemma"
+    },
+    {
+      "severity": "ok",
+      "message": "Reset restores correct section from original template: Covered by ResetRestoresCorrectSections lemma"
+    },
+    {
+      "severity": "ok",
+      "message": "Reset restores correct tags from original template: Covered by ResetRestoresCorrectTags lemma"
+    },
+    {
+      "severity": "ok",
+      "message": "Importing laps preserves existing: Covered by ImportPreservesExisting lemma"
+    },
+    {
+      "severity": "ok",
+      "message": "Imported laps appended to end: Covered by ImportAppendsToEnd lemma"
+    },
+    {
+      "severity": "warning",
+      "message": "Import atomicity (single undo removes all): No direct Dafny lemma proves undo atomicity - this is a UI/runtime concern, not domain logic"
+    },
+    {
+      "severity": "warning",
+      "message": "Undo/redo system: No Dafny model for action history stack - this is likely handled by Kernel/Replay module externally"
+    },
+    {
+      "severity": "ok",
+      "message": "Each lap can have zero or more tags: Covered by Lap.tags field as seq<string>"
+    },
+    {
+      "severity": "ok",
+      "message": "Adding tag makes it present: Covered by AddTagAddsTag lemma"
+    },
+    {
+      "severity": "ok",
+      "message": "Removing tag makes it absent: Covered by RemoveTagRemovesTag lemma"
+    },
+    {
+      "severity": "ok",
+      "message": "Adding tag preserves other lap data: Covered by AddTagPreservesLapData lemma"
+    },
+    {
+      "severity": "ok",
+      "message": "Removing tag preserves other lap data: Covered by RemoveTagPreservesLapData lemma"
+    },
+    {
+      "severity": "ok",
+      "message": "SumByTag is non-negative: Covered by SumByTagNonNegative lemma"
+    },
+    {
+      "severity": "ok",
+      "message": "SumByTag only counts selected laps: Covered by SumByTagOnlySelected lemma"
+    },
+    {
+      "severity": "ok",
+      "message": "SumByTag only counts laps with specified tag: Covered by SumByTagOnlyTagged lemma"
+    },
+    {
+      "severity": "ok",
+      "message": "SumByTag includes duration when lap is selected and has tag: Covered by SumByTagIncludesDuration lemma"
+    },
+    {
+      "severity": "ok",
+      "message": "Domain complete: Model type defined with all required fields"
+    },
+    {
+      "severity": "ok",
+      "message": "Invariant predicate defined: Inv(m) properly constrains state"
+    },
+    {
+      "severity": "ok",
+      "message": "Action datatype covers all behaviors: All spec actions have corresponding Action variants"
+    },
+    {
+      "severity": "ok",
+      "message": "AppCore API exposes verified functions: SelectedTotal, SelectedCount, SumByTag, CountByTag, CollectAllTags"
+    },
+    {
+      "severity": "info",
+      "message": "Orphan check: All lemmas correspond to spec items; no orphaned lemmas found"
+    },
+    {
+      "severity": "info",
+      "message": "No axioms found in Domain.dfy - all [verified] items use proven lemmas"
+    }
+  ],
+  "summary": "All 51 verified spec items have corresponding lemmas; 2 minor warnings about undo/atomicity being runtime concerns rather than domain logic",
+  "completedAt": "2026-02-07T22:28:22.968Z"
+}

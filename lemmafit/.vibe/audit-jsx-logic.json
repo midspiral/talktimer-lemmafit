@@ -1,0 +1,205 @@
+{
+  "status": "done",
+  "findings": [
+    {
+      "file": "src/App.tsx",
+      "line": 12,
+      "code": "const totalSeconds = Math.floor(ms / 1000)",
+      "label": "Time formatting arithmetic on domain values",
+      "suggestion": "Move formatTime to Dafny layer as a pure function"
+    },
+    {
+      "file": "src/App.tsx",
+      "line": 13,
+      "code": "const minutes = Math.floor(totalSeconds / 60)",
+      "label": "Time formatting arithmetic on domain values",
+      "suggestion": "Move formatTime to Dafny layer as a pure function"
+    },
+    {
+      "file": "src/App.tsx",
+      "line": 14,
+      "code": "const seconds = totalSeconds % 60",
+      "label": "Time formatting arithmetic on domain values",
+      "suggestion": "Move formatTime to Dafny layer as a pure function"
+    },
+    {
+      "file": "src/App.tsx",
+      "line": 23,
+      "code": "const secs = parseInt(parts[0], 10)",
+      "label": "Time parsing logic with validation",
+      "suggestion": "Move parseTime to Dafny layer"
+    },
+    {
+      "file": "src/App.tsx",
+      "line": 24,
+      "code": "if (isNaN(secs) || secs < 0) return null",
+      "label": "Validation logic on domain values",
+      "suggestion": "Move parseTime to Dafny layer"
+    },
+    {
+      "file": "src/App.tsx",
+      "line": 29,
+      "code": "const mins = parseInt(parts[0], 10)",
+      "label": "Time parsing logic",
+      "suggestion": "Move parseTime to Dafny layer"
+    },
+    {
+      "file": "src/App.tsx",
+      "line": 30,
+      "code": "const secs = parseInt(parts[1], 10)",
+      "label": "Time parsing logic",
+      "suggestion": "Move parseTime to Dafny layer"
+    },
+    {
+      "file": "src/App.tsx",
+      "line": 31,
+      "code": "if (isNaN(mins) || isNaN(secs) || mins < 0 || secs < 0 || secs >= 60) return null",
+      "label": "Validation logic with bounds checking",
+      "suggestion": "Move parseTime to Dafny layer"
+    },
+    {
+      "file": "src/App.tsx",
+      "line": 32,
+      "code": "return (mins * 60 + secs) * 1000",
+      "label": "Time conversion arithmetic",
+      "suggestion": "Move parseTime to Dafny layer"
+    },
+    {
+      "file": "src/App.tsx",
+      "line": 49,
+      "code": ".sort((a, b) => b.total - a.total)",
+      "label": "Sorting logic on domain data",
+      "suggestion": "Move sorting to Dafny layer, add SortedTagTotals function"
+    },
+    {
+      "file": "src/App.tsx",
+      "line": 55,
+      "code": ".filter(lap => lap.selected)",
+      "label": "Filtering domain data based on state",
+      "suggestion": "Move to Dafny layer as SelectedLaps function"
+    },
+    {
+      "file": "src/App.tsx",
+      "line": 73,
+      "code": "if (labelPart.toLowerCase() === 'total') continue",
+      "label": "Domain-specific parsing logic",
+      "suggestion": "Move parseMarkdown to Dafny layer"
+    },
+    {
+      "file": "src/App.tsx",
+      "line": 77,
+      "code": "const tagMatch = labelPart.match(/^(.+?)\\s*\\[([^\\]]+)\\]$/)",
+      "label": "Domain-specific parsing logic",
+      "suggestion": "Move parseMarkdown to Dafny layer"
+    },
+    {
+      "file": "src/App.tsx",
+      "line": 79,
+      "code": "labelPart = tagMatch[1].trim()",
+      "label": "Domain-specific parsing logic",
+      "suggestion": "Move parseMarkdown to Dafny layer"
+    },
+    {
+      "file": "src/App.tsx",
+      "line": 80,
+      "code": "tags = tagMatch[2].split(',').map(t => t.trim()).filter(t => t.length > 0)",
+      "label": "Domain-specific parsing/filtering logic",
+      "suggestion": "Move parseMarkdown to Dafny layer"
+    },
+    {
+      "file": "src/App.tsx",
+      "line": 160,
+      "code": "const labels = model.laps.filter(lap => lap.section !== '').map(lap => ({ section: lap.section, expectedDuration: lap.duration, tags: lap.tags }))",
+      "label": "Filtering and mapping domain data",
+      "suggestion": "Move to Dafny layer as ExtractLabelsForPractice function"
+    },
+    {
+      "file": "src/App.tsx",
+      "line": 161,
+      "code": "if (labels.length === 0) return",
+      "label": "Conditional on domain data length",
+      "suggestion": "Add CanStartPractice query function in Dafny"
+    },
+    {
+      "file": "src/App.tsx",
+      "line": 206,
+      "code": "const trimmedTag = tag.trim()",
+      "label": "String processing on domain values",
+      "suggestion": "Move tag trimming to Dafny layer"
+    },
+    {
+      "file": "src/App.tsx",
+      "line": 207,
+      "code": "if (trimmedTag) {",
+      "label": "Conditional on processed domain value",
+      "suggestion": "Move validation to Dafny layer"
+    },
+    {
+      "file": "src/App.tsx",
+      "line": 225,
+      "code": "const parsed = parseMarkdown(text)",
+      "label": "Domain parsing in React",
+      "suggestion": "Move parseMarkdown to Dafny layer"
+    },
+    {
+      "file": "src/App.tsx",
+      "line": 226,
+      "code": "if (parsed.length === 0) return",
+      "label": "Conditional on parsed domain data",
+      "suggestion": "Handle empty case in Dafny layer"
+    },
+    {
+      "file": "src/App.tsx",
+      "line": 268,
+      "code": "if (editingLap !== null || editingDuration !== null || editingTagsIdx !== null) return",
+      "label": "UI state conditional - acceptable",
+      "suggestion": "This is UI logic, keep as-is"
+    },
+    {
+      "file": "src/App.tsx",
+      "line": 302,
+      "code": "disabled={!model.laps.some(lap => lap.section !== '') || model.template.length > 0}",
+      "label": "Complex domain conditional for button state",
+      "suggestion": "Add CanStartPractice query function in Dafny"
+    },
+    {
+      "file": "src/App.tsx",
+      "line": 341,
+      "code": "lap.duration >= lap.expectedDuration ? 'diff-plus' : 'diff-minus'",
+      "label": "Comparison logic on domain values for styling",
+      "suggestion": "Add IsDurationOverExpected query in Dafny"
+    },
+    {
+      "file": "src/App.tsx",
+      "line": 341,
+      "code": "lap.duration >= lap.expectedDuration ? '+' : '-'",
+      "label": "Comparison logic on domain values",
+      "suggestion": "Add IsDurationOverExpected query in Dafny"
+    },
+    {
+      "file": "src/App.tsx",
+      "line": 341,
+      "code": "Math.abs(lap.duration - lap.expectedDuration)",
+      "label": "Arithmetic on domain values",
+      "suggestion": "Add DurationDifference function in Dafny"
+    },
+    {
+      "file": "src/App.tsx",
+      "line": 393,
+      "code": "disabled={idx === 0}",
+      "label": "Bounds check on domain index",
+      "suggestion": "Add CanMoveUp(idx) query in Dafny"
+    },
+    {
+      "file": "src/App.tsx",
+      "line": 400,
+      "code": "disabled={idx === model.laps.length - 1}",
+      "label": "Bounds check on domain index",
+      "suggestion": "Add CanMoveDown(idx) query in Dafny"
+    }
+  ],
+  "filesScanned": 2,
+  "clean": false,
+  "summary": "28 findings: time formatting/parsing, filtering/sorting domain data, bounds checks, and arithmetic on domain values should move to Dafny layer",
+  "completedAt": "2026-02-07T22:30:13.847Z"
+}

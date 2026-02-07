@@ -1,0 +1,27 @@
+{
+  "status": "done",
+  "findings": [
+    {
+      "severity": "warning",
+      "message": "Inconsistent terminology: 'lap' vs 'take' - The spec uses 'lap' (timer action creating markers) and 'take' (a recording attempt) somewhat interchangeably. Session Data Model says 'each Section contains one or more Takes' but most features refer to 'laps'. Take Selection says 'Users can delete unwanted or noisy takes' while Lap Reordering operates on 'laps'. It's unclear if these are the same entity or different concepts."
+    },
+    {
+      "severity": "warning",
+      "message": "Potential conflict in Practice Mode reset behavior: 'Reset in practice mode restores ORIGINAL template as laps' vs 'Reset in practice mode clears both template and originalTemplate (exits practice mode)' - These two items describe what happens on reset, but the first says it restores original template AS LAPS while the second says it clears templates and exits practice mode. If templates are cleared on reset, how can subsequent reset operations restore from the original?"
+    },
+    {
+      "severity": "info",
+      "message": "Redundancy: 'Selected total equals sum of selected lap durations' and 'Total estimated talk duration is computed by summing the selected takes' in Take Selection say essentially the same thing (assuming lap=take), which could drift apart if edited independently."
+    },
+    {
+      "severity": "info",
+      "message": "Redundancy: 'Selected total is non-negative when all durations are non-negative' in Take Selection and 'SumByTag is non-negative when all durations are non-negative' in Tagging express similar invariants that could be unified or one could reference the other."
+    },
+    {
+      "severity": "info",
+      "message": "Terminology variation: 'section name' vs 'section label' - Session Data Model uses 'section name' ('Each lap can be labeled with a section name') while Practice Mode uses 'section label' ('sets the lap's section label'). These likely refer to the same concept but use different terms."
+    }
+  ],
+  "summary": "Main issue is lap/take terminology inconsistency; practice mode reset semantics need clarification; some minor redundancies exist",
+  "completedAt": "2026-02-07T22:27:35.249Z"
+}
