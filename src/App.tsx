@@ -31,30 +31,23 @@ function parseTime(str: string): number | null {
   return null
 }
 
-// Compute total duration of selected takes
+// Use verified Dafny functions for computations
 function getSelectedTotal(laps: Lap[]): number {
-  return laps.filter(lap => lap.selected).reduce((sum, lap) => sum + lap.duration, 0)
+  return Api.SelectedTotal(laps)
 }
 
-// Count selected laps
 function getSelectedCount(laps: Lap[]): number {
-  return laps.filter(lap => lap.selected).length
+  return Api.SelectedCount(laps)
 }
 
-// Compute totals by tag for selected laps
 function getTagTotals(laps: Lap[]): { tag: string; total: number; count: number }[] {
-  const tagMap = new Map<string, { total: number; count: number }>()
-
-  for (const lap of laps) {
-    if (!lap.selected) continue
-    for (const tag of lap.tags) {
-      const existing = tagMap.get(tag) || { total: 0, count: 0 }
-      tagMap.set(tag, { total: existing.total + lap.duration, count: existing.count + 1 })
-    }
-  }
-
-  return Array.from(tagMap.entries())
-    .map(([tag, data]) => ({ tag, ...data }))
+  const tags = Api.CollectAllTags(laps)
+  return tags
+    .map(tag => ({
+      tag,
+      total: Api.SumByTag(laps, tag),
+      count: Api.CountByTag(laps, tag)
+    }))
     .sort((a, b) => b.total - a.total)
 }
 

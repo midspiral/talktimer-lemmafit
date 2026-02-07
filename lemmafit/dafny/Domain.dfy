@@ -42,7 +42,7 @@ module TalkTimer refines Domain {
     | SetTemplate(labels: seq<TemplateEntry>)  // set practice template queue
     | ConsumeTemplate                       // label last lap from template, select it
     | ImportLaps(laps: seq<Lap>)            // import multiple laps at once
-    | Reset                                 // clear all laps
+    | Reset                                 // restore original template as laps, or clear all if not in practice mode
 
   //----------------------------------------------------------------------
   // Helpers
@@ -540,6 +540,22 @@ module TalkTimer refines Domain {
     Sum(SelectedDurations(laps))
   }
 
+  // Count selected laps
+  function SelectedCount(laps: seq<Lap>): int
+  {
+    |SelectedDurations(laps)|
+  }
+
+  // [verified] Selected count is non-negative
+  lemma SelectedCountNonNegative(laps: seq<Lap>)
+    ensures SelectedCount(laps) >= 0
+  {}
+
+  // [verified] Selected count equals number of selected laps
+  lemma SelectedCountCorrect(laps: seq<Lap>)
+    ensures SelectedCount(laps) == |SelectedDurations(laps)|
+  {}
+
   // [verified] Selected total equals sum of selected lap durations
   lemma SelectedTotalCorrect(laps: seq<Lap>)
     ensures SelectedTotal(laps) == Sum(SelectedDurations(laps))
@@ -608,6 +624,54 @@ module TalkTimer refines Domain {
     requires !LapHasTag(laps[0], tag)
     ensures SumByTag(laps, tag) == SumByTag(laps[1..], tag)
   {}
+
+  // Count selected laps that have a specific tag
+  function CountByTag(laps: seq<Lap>, tag: string): int
+  {
+    if |laps| == 0 then 0
+    else if laps[0].selected && LapHasTag(laps[0], tag) then
+      1 + CountByTag(laps[1..], tag)
+    else
+      CountByTag(laps[1..], tag)
+  }
+
+  // [verified] CountByTag is non-negative
+  lemma CountByTagNonNegative(laps: seq<Lap>, tag: string)
+    ensures CountByTag(laps, tag) >= 0
+  {
+    if |laps| == 0 {
+    } else {
+      CountByTagNonNegative(laps[1..], tag);
+    }
+  }
+
+  // Collect all unique tags from selected laps
+  function CollectTagsFromLap(lap: Lap): seq<string>
+  {
+    if lap.selected then lap.tags else []
+  }
+
+  function CollectAllTagsHelper(laps: seq<Lap>, seen: seq<string>): seq<string>
+  {
+    if |laps| == 0 then seen
+    else
+      var newTags := CollectTagsFromLap(laps[0]);
+      var updatedSeen := AddUniqueTags(seen, newTags);
+      CollectAllTagsHelper(laps[1..], updatedSeen)
+  }
+
+  function AddUniqueTags(seen: seq<string>, tags: seq<string>): seq<string>
+    decreases |tags|
+  {
+    if |tags| == 0 then seen
+    else if tags[0] in seen then AddUniqueTags(seen, tags[1..])
+    else AddUniqueTags(seen + [tags[0]], tags[1..])
+  }
+
+  function CollectAllTags(laps: seq<Lap>): seq<string>
+  {
+    CollectAllTagsHelper(laps, [])
+  }
 
   // [verified] SumByTag includes duration when lap is selected and has tag
   lemma SumByTagIncludesDuration(laps: seq<Lap>, tag: string)
@@ -717,4 +781,25 @@ module TalkTimer refines Domain {
 // AppCore: concrete Kernel instantiated with TalkTimer domain
 module AppCore refines Kernel {
   import D = TalkTimer
+
+  // Expose verified computation functions
+  function SelectedTotal(laps: seq<D.Lap>): int {
+    D.SelectedTotal(laps)
+  }
+
+  function SelectedCount(laps: seq<D.Lap>): int {
+    D.SelectedCount(laps)
+  }
+
+  function SumByTag(laps: seq<D.Lap>, tag: string): int {
+    D.SumByTag(laps, tag)
+  }
+
+  function CountByTag(laps: seq<D.Lap>, tag: string): int {
+    D.CountByTag(laps, tag)
+  }
+
+  function CollectAllTags(laps: seq<D.Lap>): seq<string> {
+    D.CollectAllTags(laps)
+  }
 }

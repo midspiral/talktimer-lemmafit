@@ -427,6 +427,11 @@ const App = {
   GetOriginalTemplate: (m: DafnyModel) => seqToArray(m.dtor_originalTemplate).map((x: any) => templateentryToJson(x)),
 
   // AppCore functions
+  SelectedTotal: (laps: Lap[]) => toNumber(AppCore.__default.SelectedTotal(_dafny.Seq.of(...(laps || []).map((x: any) => lapFromJson(x))))),
+  SelectedCount: (laps: Lap[]) => toNumber(AppCore.__default.SelectedCount(_dafny.Seq.of(...(laps || []).map((x: any) => lapFromJson(x))))),
+  SumByTag: (laps: Lap[], tag: string) => toNumber(AppCore.__default.SumByTag(_dafny.Seq.of(...(laps || []).map((x: any) => lapFromJson(x))), _dafny.Seq.UnicodeFromString(tag))),
+  CountByTag: (laps: Lap[], tag: string) => toNumber(AppCore.__default.CountByTag(_dafny.Seq.of(...(laps || []).map((x: any) => lapFromJson(x))), _dafny.Seq.UnicodeFromString(tag))),
+  CollectAllTags: (laps: Lap[]) => seqToArray(AppCore.__default.CollectAllTags(_dafny.Seq.of(...(laps || []).map((x: any) => lapFromJson(x))))).map(x => dafnyStringToJs(x)),
   Step: (m: DafnyModel, a: DafnyAction) => AppCore.__default.Step(m, a),
   InitHistory: () => AppCore.__default.InitHistory(),
   Do: (h: DafnyHistory, a: DafnyAction) => AppCore.__default.Do(h, a),

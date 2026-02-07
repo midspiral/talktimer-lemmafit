@@ -1500,6 +1500,9 @@ let TalkTimer = (function() {
     static SelectedTotal(laps) {
       return TalkTimer.__default.Sum(TalkTimer.__default.SelectedDurations(laps));
     };
+    static SelectedCount(laps) {
+      return new BigNumber((TalkTimer.__default.SelectedDurations(laps)).length);
+    };
     static LapHasTag(lap, tag) {
       return _dafny.Seq.contains((lap).dtor_tags, tag);
     };
@@ -1523,6 +1526,71 @@ let TalkTimer = (function() {
           continue TAIL_CALL_START;
         }
       }
+    };
+    static CountByTag(laps, tag) {
+      let _0___accumulator = _dafny.ZERO;
+      TAIL_CALL_START: while (true) {
+        if ((new BigNumber((laps).length)).isEqualTo(_dafny.ZERO)) {
+          return (_dafny.ZERO).plus(_0___accumulator);
+        } else if ((((laps)[_dafny.ZERO]).dtor_selected) && (TalkTimer.__default.LapHasTag((laps)[_dafny.ZERO], tag))) {
+          _0___accumulator = (_0___accumulator).plus(_dafny.ONE);
+          let _in0 = (laps).slice(_dafny.ONE);
+          let _in1 = tag;
+          laps = _in0;
+          tag = _in1;
+          continue TAIL_CALL_START;
+        } else {
+          let _in2 = (laps).slice(_dafny.ONE);
+          let _in3 = tag;
+          laps = _in2;
+          tag = _in3;
+          continue TAIL_CALL_START;
+        }
+      }
+    };
+    static CollectTagsFromLap(lap) {
+      if ((lap).dtor_selected) {
+        return (lap).dtor_tags;
+      } else {
+        return _dafny.Seq.of();
+      }
+    };
+    static CollectAllTagsHelper(laps, seen) {
+      TAIL_CALL_START: while (true) {
+        if ((new BigNumber((laps).length)).isEqualTo(_dafny.ZERO)) {
+          return seen;
+        } else {
+          let _0_newTags = TalkTimer.__default.CollectTagsFromLap((laps)[_dafny.ZERO]);
+          let _1_updatedSeen = TalkTimer.__default.AddUniqueTags(seen, _0_newTags);
+          let _in0 = (laps).slice(_dafny.ONE);
+          let _in1 = _1_updatedSeen;
+          laps = _in0;
+          seen = _in1;
+          continue TAIL_CALL_START;
+        }
+      }
+    };
+    static AddUniqueTags(seen, tags) {
+      TAIL_CALL_START: while (true) {
+        if ((new BigNumber((tags).length)).isEqualTo(_dafny.ZERO)) {
+          return seen;
+        } else if (_dafny.Seq.contains(seen, (tags)[_dafny.ZERO])) {
+          let _in0 = seen;
+          let _in1 = (tags).slice(_dafny.ONE);
+          seen = _in0;
+          tags = _in1;
+          continue TAIL_CALL_START;
+        } else {
+          let _in2 = _dafny.Seq.Concat(seen, _dafny.Seq.of((tags)[_dafny.ZERO]));
+          let _in3 = (tags).slice(_dafny.ONE);
+          seen = _in2;
+          tags = _in3;
+          continue TAIL_CALL_START;
+        }
+      }
+    };
+    static CollectAllTags(laps) {
+      return TalkTimer.__default.CollectAllTagsHelper(laps, _dafny.Seq.of());
     };
   };
 
@@ -1852,6 +1920,21 @@ let AppCore = (function() {
     _parentTraits() {
       return [];
     }
+    static SelectedTotal(laps) {
+      return TalkTimer.__default.SelectedTotal(laps);
+    };
+    static SelectedCount(laps) {
+      return TalkTimer.__default.SelectedCount(laps);
+    };
+    static SumByTag(laps, tag) {
+      return TalkTimer.__default.SumByTag(laps, tag);
+    };
+    static CountByTag(laps, tag) {
+      return TalkTimer.__default.CountByTag(laps, tag);
+    };
+    static CollectAllTags(laps) {
+      return TalkTimer.__default.CollectAllTags(laps);
+    };
     static Step(m, a) {
       return TalkTimer.__default.Normalize(TalkTimer.__default.Apply(m, a));
     };
