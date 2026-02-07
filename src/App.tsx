@@ -510,7 +510,9 @@ function App() {
                   </div>
 
                   {lap.expectedDuration >= 0 && (
-                    <span className="expected-duration">(was {formatTime(lap.expectedDuration)})</span>
+                    <span className="expected-duration">
+                      (was {formatTime(lap.expectedDuration)}, <span className={lap.duration >= lap.expectedDuration ? 'diff-plus' : 'diff-minus'}>{lap.duration >= lap.expectedDuration ? '+' : '-'}{formatTime(Math.abs(lap.duration - lap.expectedDuration))}</span>)
+                    </span>
                   )}
 
                   <button
