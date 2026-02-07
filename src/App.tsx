@@ -2,6 +2,8 @@ import { useState, useEffect, useCallback, useRef } from 'react'
 import Api, { Action, Lap } from './dafny/app'
 import './App.css'
 
+type DafnyHistory = ReturnType<typeof Api.InitHistory>
+
 // Format milliseconds as MM:SS
 function formatTime(ms: number): string {
   const totalSeconds = Math.floor(ms / 1000)
@@ -75,7 +77,7 @@ function App() {
 
   // Apply action with history tracking
   const dispatch = useCallback((action: Action) => {
-    setDafnyHistory(h => {
+    setDafnyHistory((h: DafnyHistory) => {
       const dafnyAction = Api.actionFromJson(action)
       return Api.Do(h, dafnyAction)
     })
@@ -83,12 +85,12 @@ function App() {
 
   // Undo
   const undo = useCallback(() => {
-    setDafnyHistory(h => Api.Undo(h))
+    setDafnyHistory((h: DafnyHistory) => Api.Undo(h))
   }, [])
 
   // Redo
   const redo = useCallback(() => {
-    setDafnyHistory(h => Api.Redo(h))
+    setDafnyHistory((h: DafnyHistory) => Api.Redo(h))
   }, [])
 
   // Timer effect
@@ -130,7 +132,7 @@ function App() {
     const setTimeAction = Api.actionFromJson({ type: 'SetTime', ms: displayTime })
     const createLapAction = Api.actionFromJson({ type: 'CreateLap' })
 
-    setDafnyHistory(h => {
+    setDafnyHistory((h: DafnyHistory) => {
       const h1 = Api.Do(h, setTimeAction)
       return Api.Do(h1, createLapAction)
     })
