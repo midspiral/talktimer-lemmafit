@@ -53,9 +53,9 @@
   background: #9ca3af;
 }
 
-.control-btn.hidden {
-  visibility: hidden;
-  pointer-events: none;
+.control-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
 }
 
 .lap-btn {
@@ -119,8 +119,13 @@
   transition: background 0.15s;
 }
 
-.practice-btn:hover {
+.practice-btn:hover:not(:disabled) {
   background: #7c3aed;
+}
+
+.practice-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
 }
 
 /* Template queue */

@@ -366,15 +366,14 @@ function App() {
         </button>
         <button
           onClick={createLap}
-          className={`control-btn lap-btn ${!running ? 'hidden' : ''}`}
+          className="control-btn lap-btn"
           disabled={!running}
         >
           Lap
         </button>
         <button
           onClick={resetTimer}
-          className={`control-btn reset-btn ${model.laps.length === 0 && model.originalTemplate.length === 0 ? 'hidden' : ''}`}
-          disabled={model.laps.length === 0 && model.originalTemplate.length === 0}
+          className="control-btn reset-btn"
         >
           Reset
         </button>
@@ -387,11 +386,13 @@ function App() {
         <button onClick={redo} disabled={!canRedo} className="redo-btn">
           Redo
         </button>
-        {model.laps.some(lap => lap.section !== '') && model.template.length === 0 && (
-          <button onClick={startPractice} className="practice-btn">
-            Practice
-          </button>
-        )}
+        <button
+          onClick={startPractice}
+          className="practice-btn"
+          disabled={!model.laps.some(lap => lap.section !== '') || model.template.length > 0}
+        >
+          Practice
+        </button>
       </div>
 
       {model.template.length > 0 && (
