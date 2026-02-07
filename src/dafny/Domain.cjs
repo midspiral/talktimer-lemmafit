@@ -1460,6 +1460,50 @@ let TalkTimer = (function() {
         }
       }
     };
+    static SelectedDurations(laps) {
+      let _0___accumulator = _dafny.Seq.of();
+      TAIL_CALL_START: while (true) {
+        if ((new BigNumber((laps).length)).isEqualTo(_dafny.ZERO)) {
+          return _dafny.Seq.Concat(_0___accumulator, _dafny.Seq.of());
+        } else if (((laps)[_dafny.ZERO]).dtor_selected) {
+          _0___accumulator = _dafny.Seq.Concat(_0___accumulator, _dafny.Seq.of(((laps)[_dafny.ZERO]).dtor_duration));
+          let _in0 = (laps).slice(_dafny.ONE);
+          laps = _in0;
+          continue TAIL_CALL_START;
+        } else {
+          let _in1 = (laps).slice(_dafny.ONE);
+          laps = _in1;
+          continue TAIL_CALL_START;
+        }
+      }
+    };
+    static SelectedTotal(laps) {
+      return TalkTimer.__default.Sum(TalkTimer.__default.SelectedDurations(laps));
+    };
+    static LapHasTag(lap, tag) {
+      return _dafny.Seq.contains((lap).dtor_tags, tag);
+    };
+    static SumByTag(laps, tag) {
+      let _0___accumulator = _dafny.ZERO;
+      TAIL_CALL_START: while (true) {
+        if ((new BigNumber((laps).length)).isEqualTo(_dafny.ZERO)) {
+          return (_dafny.ZERO).plus(_0___accumulator);
+        } else if ((((laps)[_dafny.ZERO]).dtor_selected) && (TalkTimer.__default.LapHasTag((laps)[_dafny.ZERO], tag))) {
+          _0___accumulator = (_0___accumulator).plus(((laps)[_dafny.ZERO]).dtor_duration);
+          let _in0 = (laps).slice(_dafny.ONE);
+          let _in1 = tag;
+          laps = _in0;
+          tag = _in1;
+          continue TAIL_CALL_START;
+        } else {
+          let _in2 = (laps).slice(_dafny.ONE);
+          let _in3 = tag;
+          laps = _in2;
+          tag = _in3;
+          continue TAIL_CALL_START;
+        }
+      }
+    };
   };
 
   $module.Lap = class Lap {

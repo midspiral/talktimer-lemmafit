@@ -20,6 +20,8 @@ A talk rehearsal timer that tracks lap times, organizes takes by section, and co
 - [verified] Users can delete unwanted or noisy takes (without affecting other takes' durations)
 - [verified] Users can manually adjust the duration of any take
 - [verified] Total estimated talk duration is computed by summing the selected takes
+- [verified] Selected total equals sum of selected lap durations
+- [verified] Selected total is non-negative when all durations are non-negative
 
 ## Feature: Lap Reordering
 
@@ -37,6 +39,9 @@ A talk rehearsal timer that tracks lap times, organizes takes by section, and co
 - [verified] Consumed template entry sets the lap's expected duration
 - [verified] Consumed template entry sets the lap's tags
 - [verified] Template queue length decreases by one after consumption
+- [verified] Consuming template sets all fields (section, selected, tags, expected) from entry
+- [verified] Consuming template preserves original lap duration
+- [verified] Consuming template preserves original lap timestamp
 
 ## Feature: Import/Export
 
@@ -65,6 +70,10 @@ A talk rehearsal timer that tracks lap times, organizes takes by section, and co
 - [verified] Removing a tag from a lap preserves other lap data
 - [trusted] Tags are displayed as chips on each lap
 - [trusted] Users can add tags via a + button
+- [verified] SumByTag is non-negative when all durations are non-negative
+- [verified] SumByTag only counts selected laps
+- [verified] SumByTag only counts laps with the specified tag
+- [verified] SumByTag includes duration when lap is selected and has tag
 - [trusted] Total time by tag is displayed for selected laps
 - [trusted] Tags are included in Markdown export
 - [trusted] Tags are parsed from Markdown import

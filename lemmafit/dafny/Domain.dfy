@@ -492,6 +492,135 @@ module TalkTimer refines Domain {
   {
     SumOfNonNegativeIsNonNegative(durations);
   }
+
+  //----------------------------------------------------------------------
+  // Selected Total Helpers
+  //----------------------------------------------------------------------
+
+  // Extract durations of selected laps
+  function SelectedDurations(laps: seq<Lap>): seq<int>
+  {
+    if |laps| == 0 then []
+    else if laps[0].selected then [laps[0].duration] + SelectedDurations(laps[1..])
+    else SelectedDurations(laps[1..])
+  }
+
+  // Compute total of selected laps
+  function SelectedTotal(laps: seq<Lap>): int
+  {
+    Sum(SelectedDurations(laps))
+  }
+
+  // [verified] Selected total equals sum of selected lap durations
+  lemma SelectedTotalCorrect(laps: seq<Lap>)
+    ensures SelectedTotal(laps) == Sum(SelectedDurations(laps))
+  {}
+
+  // [verified] Selected total is non-negative when all durations are non-negative
+  lemma SelectedTotalNonNegative(laps: seq<Lap>)
+    requires LapsValid(laps)
+    ensures SelectedTotal(laps) >= 0
+  {
+    SelectedDurationsNonNegative(laps);
+    SumOfNonNegativeIsNonNegative(SelectedDurations(laps));
+  }
+
+  lemma SelectedDurationsNonNegative(laps: seq<Lap>)
+    requires LapsValid(laps)
+    ensures forall i | 0 <= i < |SelectedDurations(laps)| :: SelectedDurations(laps)[i] >= 0
+  {
+    if |laps| == 0 {
+    } else {
+      SelectedDurationsNonNegative(laps[1..]);
+    }
+  }
+
+  //----------------------------------------------------------------------
+  // Tag Total Helpers
+  //----------------------------------------------------------------------
+
+  // Check if a lap has a specific tag
+  predicate LapHasTag(lap: Lap, tag: string) {
+    tag in lap.tags
+  }
+
+  // Sum durations of selected laps that have a specific tag
+  function SumByTag(laps: seq<Lap>, tag: string): int
+  {
+    if |laps| == 0 then 0
+    else if laps[0].selected && LapHasTag(laps[0], tag) then
+      laps[0].duration + SumByTag(laps[1..], tag)
+    else
+      SumByTag(laps[1..], tag)
+  }
+
+  // [verified] SumByTag is non-negative when all durations are non-negative
+  lemma SumByTagNonNegative(laps: seq<Lap>, tag: string)
+    requires LapsValid(laps)
+    ensures SumByTag(laps, tag) >= 0
+  {
+    if |laps| == 0 {
+    } else {
+      SumByTagNonNegative(laps[1..], tag);
+    }
+  }
+
+  // [verified] SumByTag only counts selected laps
+  lemma SumByTagOnlySelected(laps: seq<Lap>, tag: string)
+    requires |laps| > 0
+    requires !laps[0].selected
+    ensures SumByTag(laps, tag) == SumByTag(laps[1..], tag)
+  {}
+
+  // [verified] SumByTag only counts laps with the tag
+  lemma SumByTagOnlyTagged(laps: seq<Lap>, tag: string)
+    requires |laps| > 0
+    requires laps[0].selected
+    requires !LapHasTag(laps[0], tag)
+    ensures SumByTag(laps, tag) == SumByTag(laps[1..], tag)
+  {}
+
+  // [verified] SumByTag includes duration when lap is selected and has tag
+  lemma SumByTagIncludesDuration(laps: seq<Lap>, tag: string)
+    requires |laps| > 0
+    requires laps[0].selected
+    requires LapHasTag(laps[0], tag)
+    ensures SumByTag(laps, tag) == laps[0].duration + SumByTag(laps[1..], tag)
+  {}
+
+  //----------------------------------------------------------------------
+  // Practice Round-Trip Lemmas
+  //----------------------------------------------------------------------
+
+  // [verified] ConsumeTemplate sets all fields from template entry
+  lemma ConsumeTemplateRoundTrip(m: Model)
+    requires Inv(m)
+    requires |m.template| > 0
+    requires |m.laps| > 0
+    ensures var result := Apply(m, ConsumeTemplate);
+            var idx := |m.laps| - 1;
+            var entry := m.template[0];
+            result.laps[idx].section == entry.section &&
+            result.laps[idx].selected == true &&
+            result.laps[idx].tags == entry.tags &&
+            (entry.expectedDuration >= 0 ==> result.laps[idx].expectedDuration == entry.expectedDuration)
+  {}
+
+  // [verified] ConsumeTemplate preserves original lap duration
+  lemma ConsumeTemplatePreservesDuration(m: Model)
+    requires Inv(m)
+    requires |m.template| > 0
+    requires |m.laps| > 0
+    ensures Apply(m, ConsumeTemplate).laps[|m.laps|-1].duration == m.laps[|m.laps|-1].duration
+  {}
+
+  // [verified] ConsumeTemplate preserves original lap timestamp
+  lemma ConsumeTemplatePreservesTimestamp(m: Model)
+    requires Inv(m)
+    requires |m.template| > 0
+    requires |m.laps| > 0
+    ensures Apply(m, ConsumeTemplate).laps[|m.laps|-1].timestamp == m.laps[|m.laps|-1].timestamp
+  {}
 }
 
 // AppCore: concrete Kernel instantiated with TalkTimer domain

@@ -40,6 +40,16 @@
       "isGhost": true
     },
     {
+      "name": "LapHasTag",
+      "module": "TalkTimer",
+      "body": "tag in lap.tags",
+      "conjuncts": [
+        "tag in lap.tags"
+      ],
+      "line": 543,
+      "isGhost": false
+    },
+    {
       "name": "Inv",
       "module": "Kernel.D.Abs",
       "line": 5,
@@ -444,6 +454,125 @@
         "Sum(durations) >= 0"
       ],
       "line": 489
+    },
+    {
+      "name": "SelectedTotalCorrect",
+      "module": "TalkTimer",
+      "requires": [],
+      "ensures": [
+        "SelectedTotal(laps) == Sum(SelectedDurations(laps))"
+      ],
+      "line": 515
+    },
+    {
+      "name": "SelectedTotalNonNegative",
+      "module": "TalkTimer",
+      "requires": [
+        "LapsValid(laps)"
+      ],
+      "ensures": [
+        "SelectedTotal(laps) >= 0"
+      ],
+      "line": 520
+    },
+    {
+      "name": "SelectedDurationsNonNegative",
+      "module": "TalkTimer",
+      "requires": [
+        "LapsValid(laps)"
+      ],
+      "ensures": [
+        "forall i: int {:trigger SelectedDurations(laps)[i]} | 0 <= i < |SelectedDurations(laps)| :: SelectedDurations(laps)[i] >= 0"
+      ],
+      "line": 528
+    },
+    {
+      "name": "SumByTagNonNegative",
+      "module": "TalkTimer",
+      "requires": [
+        "LapsValid(laps)"
+      ],
+      "ensures": [
+        "SumByTag(laps, tag) >= 0"
+      ],
+      "line": 558
+    },
+    {
+      "name": "SumByTagOnlySelected",
+      "module": "TalkTimer",
+      "requires": [
+        "|laps| > 0",
+        "!laps[0].selected"
+      ],
+      "ensures": [
+        "SumByTag(laps, tag) == SumByTag(laps[1..], tag)"
+      ],
+      "line": 569
+    },
+    {
+      "name": "SumByTagOnlyTagged",
+      "module": "TalkTimer",
+      "requires": [
+        "|laps| > 0",
+        "laps[0].selected",
+        "!LapHasTag(laps[0], tag)"
+      ],
+      "ensures": [
+        "SumByTag(laps, tag) == SumByTag(laps[1..], tag)"
+      ],
+      "line": 576
+    },
+    {
+      "name": "SumByTagIncludesDuration",
+      "module": "TalkTimer",
+      "requires": [
+        "|laps| > 0",
+        "laps[0].selected",
+        "LapHasTag(laps[0], tag)"
+      ],
+      "ensures": [
+        "SumByTag(laps, tag) == laps[0].duration + SumByTag(laps[1..], tag)"
+      ],
+      "line": 584
+    },
+    {
+      "name": "ConsumeTemplateRoundTrip",
+      "module": "TalkTimer",
+      "requires": [
+        "Inv(m)",
+        "|m.template| > 0",
+        "|m.laps| > 0"
+      ],
+      "ensures": [
+        "ghost var result: Model := Apply(m, ConsumeTemplate); ghost var idx: int := |m.laps| - 1; ghost var entry: TemplateEntry := m.template[0]; result.laps[idx].section == entry.section && result.laps[idx].selected == true && result.laps[idx].tags == entry.tags && (entry.expectedDuration >= 0 ==> result.laps[idx].expectedDuration == entry.expectedDuration)"
+      ],
+      "line": 596
+    },
+    {
+      "name": "ConsumeTemplatePreservesDuration",
+      "module": "TalkTimer",
+      "requires": [
+        "Inv(m)",
+        "|m.template| > 0",
+        "|m.laps| > 0"
+      ],
+      "ensures": [
+        "Apply(m, ConsumeTemplate).laps[|m.laps| - 1].duration == m.laps[|m.laps| - 1].duration"
+      ],
+      "line": 610
+    },
+    {
+      "name": "ConsumeTemplatePreservesTimestamp",
+      "module": "TalkTimer",
+      "requires": [
+        "Inv(m)",
+        "|m.template| > 0",
+        "|m.laps| > 0"
+      ],
+      "ensures": [
+        "Apply(m, ConsumeTemplate).laps[|m.laps| - 1].timestamp == m.laps[|m.laps| - 1].timestamp"
+      ],
+      "line": 618
     },
     {
       "name": "InitSatisfiesInv",
