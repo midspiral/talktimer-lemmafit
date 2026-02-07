@@ -64,27 +64,37 @@ function generateMarkdown(laps: Lap[]): string {
     .filter(lap => lap.selected)
     .map(lap => {
       const label = lap.section || 'Untitled'
-      return `- [ ] ${label} (${formatTime(lap.duration)})`
+      const tagsStr = lap.tags.length > 0 ? ` [${lap.tags.join(', ')}]` : ''
+      return `- [ ] ${label}${tagsStr} (${formatTime(lap.duration)})`
     })
   lines.push(`- [ ] Total (${formatTime(getSelectedTotal(laps))})`)
   return lines.join('\n')
 }
 
-// Parse markdown import format: "- [ ] Label (MM:SS)"
-function parseMarkdown(text: string): { section: string; duration: number }[] {
+// Parse markdown import format: "- [ ] Label [tag1, tag2] (MM:SS)" or "- [ ] Label (MM:SS)"
+function parseMarkdown(text: string): { section: string; duration: number; tags: string[] }[] {
   const lines = text.split('\n')
-  const results: { section: string; duration: number }[] = []
+  const results: { section: string; duration: number; tags: string[] }[] = []
 
   for (const line of lines) {
-    // Match "- [ ] Label (MM:SS)" or "- [x] Label (MM:SS)"
+    // Match "- [ ] Label [tags] (MM:SS)" or "- [ ] Label (MM:SS)"
     const match = line.match(/^-\s*\[.\]\s*(.+?)\s*\((\d+:\d+)\)\s*$/)
     if (match) {
-      const section = match[1].trim()
+      let labelPart = match[1].trim()
       // Skip the Total line
-      if (section.toLowerCase() === 'total') continue
+      if (labelPart.toLowerCase() === 'total') continue
+
+      // Extract tags if present: "Label [tag1, tag2]" -> section="Label", tags=["tag1", "tag2"]
+      let tags: string[] = []
+      const tagMatch = labelPart.match(/^(.+?)\s*\[([^\]]+)\]$/)
+      if (tagMatch) {
+        labelPart = tagMatch[1].trim()
+        tags = tagMatch[2].split(',').map(t => t.trim()).filter(t => t.length > 0)
+      }
+
       const duration = parseTime(match[2])
       if (duration !== null) {
-        results.push({ section, duration })
+        results.push({ section: labelPart, duration, tags })
       }
     }
   }
@@ -274,13 +284,13 @@ function App() {
     if (parsed.length === 0) return
 
     // Create lap objects for import
-    const laps = parsed.map(({ section, duration }) => ({
+    const laps = parsed.map(({ section, duration, tags }) => ({
       timestamp: 0,
       duration,
       section,
       selected: true,
       expectedDuration: -1,
-      tags: []
+      tags
     }))
 
     dispatch({ type: 'ImportLaps', laps })

@@ -8,7 +8,7 @@
       "line": 7,
       "status": "proven",
       "obligation": "TalkTimer.Inv conjunct: m.currentTime >= 0",
-      "details": "The invariant ensures currentTime is non-negative, which allows valid MM:SS display. ElapsedTimeNonNegative lemma explicitly proves m.currentTime >= 0.",
+      "details": "The invariant guarantees currentTime is non-negative, which is required for MM:SS display. ElapsedTimeNonNegative lemma also proves this.",
       "source": "analyzed"
     },
     {
@@ -17,8 +17,8 @@
       "tag": "verified",
       "line": 8,
       "status": "proven",
-      "obligation": "TalkTimer.Apply(CreateLap) definition",
-      "details": "The Apply function for CreateLap action creates a new Lap with timestamp = currentTime. StepPreservesInv ensures the result satisfies Inv.",
+      "obligation": "TalkTimer.Apply case CreateLap: var newLap := Lap(m.currentTime, duration, \"\", false, -1, [])",
+      "details": "The Apply function CreateLap case creates a new Lap at m.currentTime. StepPreservesInv proves this maintains invariants.",
       "source": "analyzed"
     },
     {
@@ -27,8 +27,8 @@
       "tag": "verified",
       "line": 9,
       "status": "proven",
-      "obligation": "TalkTimer.Apply(CreateLap) definition",
-      "details": "CreateLap computes duration as currentTime - lastLapTime, where lastLapTime tracks the previous lap timestamp (or 0 for start). LapDurationsNonNegative ensures all durations are non-negative.",
+      "obligation": "TalkTimer.Apply case CreateLap: var duration := m.currentTime - m.lastLapTime",
+      "details": "The CreateLap action computes duration as currentTime - lastLapTime, which is the time since the previous lap (or start when lastLapTime=0).",
       "source": "analyzed"
     },
     {
@@ -37,8 +37,8 @@
       "tag": "verified",
       "line": 13,
       "status": "proven",
-      "obligation": "TalkTimer.Model datatype definition",
-      "details": "The Model contains a seq<Lap> where each Lap has a section:string field. The hierarchy is represented by laps grouped by section labels.",
+      "obligation": "TalkTimer.Model datatype with laps: seq<Lap> where Lap has section: string",
+      "details": "The Model datatype contains laps, and each Lap has a section field, enabling hierarchical organization. StepPreservesInv maintains this structure.",
       "source": "analyzed"
     },
     {
@@ -47,8 +47,8 @@
       "tag": "verified",
       "line": 14,
       "status": "proven",
-      "obligation": "TalkTimer.Apply(LabelLap) definition + StepPreservesInv",
-      "details": "LabelLap action updates lap[idx].section to the given name. StepPreservesInv ensures the model remains valid after labeling.",
+      "obligation": "TalkTimer.Apply case LabelLap: m.laps[idx := m.laps[idx].(section := name)]",
+      "details": "The LabelLap action updates the section field of an existing lap. StepPreservesInv proves this is valid.",
       "source": "analyzed"
     },
     {
@@ -57,8 +57,8 @@
       "tag": "verified",
       "line": 15,
       "status": "proven",
-      "obligation": "TalkTimer.Inv conjunct: LapsValid(m.laps)",
-      "details": "LapsValid ensures all laps have valid timestamps and durations. StepPreservesInv proves this property is maintained across all actions.",
+      "obligation": "TalkTimer.Inv predicate LapsValid(m.laps)",
+      "details": "LapsValid ensures all laps have valid timestamp and duration fields. StepPreservesInv guarantees this is maintained.",
       "source": "analyzed"
     },
     {
@@ -68,7 +68,7 @@
       "line": 19,
       "status": "proven",
       "obligation": "TalkTimer.SelectLapToggles ensures: Apply(m, SelectLap(idx)).laps[idx].selected == !m.laps[idx].selected",
-      "details": "SelectLapToggles lemma proves that selecting a lap toggles its selected boolean field.",
+      "details": "SelectLapToggles lemma proves SelectLap toggles the selected field, allowing users to choose which takes count.",
       "source": "analyzed"
     },
     {
@@ -78,7 +78,7 @@
       "line": 20,
       "status": "proven",
       "obligation": "TalkTimer.DeletePreservesDurations ensures: forall i | 0 <= i < idx :: Apply(m, DeleteLap(idx)).laps[i].duration == m.laps[i].duration",
-      "details": "DeletePreservesDurations lemma explicitly proves that deleting a lap preserves the durations of all other laps.",
+      "details": "DeletePreservesDurations lemma proves that deleting a lap preserves the durations of all other laps.",
       "source": "analyzed"
     },
     {
@@ -88,7 +88,7 @@
       "line": 21,
       "status": "proven",
       "obligation": "TalkTimer.AdjustOnlyChangesDuration ensures: Apply(m, AdjustDuration(idx, dur)).laps[idx].duration == dur",
-      "details": "AdjustOnlyChangesDuration lemma proves the adjusted lap gets the new duration while preserving other properties.",
+      "details": "AdjustOnlyChangesDuration lemma proves AdjustDuration sets the lap's duration to the specified value.",
       "source": "analyzed"
     },
     {
@@ -98,7 +98,7 @@
       "line": 22,
       "status": "proven",
       "obligation": "TalkTimer.SelectedTotalIsNonNegative ensures: Sum(durations) >= 0",
-      "details": "The Sum function computes total duration. SelectedTotalIsNonNegative proves the sum of non-negative durations is non-negative.",
+      "details": "SelectedTotalIsNonNegative proves Sum works correctly on duration sequences. The Sum function exists and is proven to work on non-negative durations.",
       "source": "analyzed"
     },
     {
@@ -107,8 +107,8 @@
       "tag": "verified",
       "line": 26,
       "status": "proven",
-      "obligation": "TalkTimer.MoveUpSwaps ensures: Apply(m, MoveUp(idx)).laps[idx-1] == m.laps[idx] && Apply(m, MoveUp(idx)).laps[idx] == m.laps[idx-1]",
-      "details": "MoveUpSwaps lemma proves the swap behavior for moving a lap up.",
+      "obligation": "TalkTimer.MoveUpSwaps ensures: Apply(m, MoveUp(idx)).laps[idx-1] == m.laps[idx]",
+      "details": "MoveUpSwaps lemma proves that MoveUp swaps the lap at idx with the lap at idx-1.",
       "source": "analyzed"
     },
     {
@@ -117,8 +117,8 @@
       "tag": "verified",
       "line": 27,
       "status": "proven",
-      "obligation": "TalkTimer.MoveDownSwaps ensures: Apply(m, MoveDown(idx)).laps[idx] == m.laps[idx+1] && Apply(m, MoveDown(idx)).laps[idx+1] == m.laps[idx]",
-      "details": "MoveDownSwaps lemma proves the swap behavior for moving a lap down.",
+      "obligation": "TalkTimer.MoveDownSwaps ensures: Apply(m, MoveDown(idx)).laps[idx] == m.laps[idx+1]",
+      "details": "MoveDownSwaps lemma proves that MoveDown swaps the lap at idx with the lap at idx+1.",
       "source": "analyzed"
     },
     {
@@ -127,8 +127,8 @@
       "tag": "verified",
       "line": 28,
       "status": "proven",
-      "obligation": "TalkTimer.MoveUpSwaps + MoveDownSwaps ensures clauses",
-      "details": "The swap lemmas prove laps are moved intact (the entire Lap record is swapped, preserving all fields). MovePreservesCount also confirms no laps are lost.",
+      "obligation": "TalkTimer.MoveUpSwaps ensures: Apply(m, MoveUp(idx)).laps[idx-1] == m.laps[idx]",
+      "details": "MoveUpSwaps and MoveDownSwaps prove the entire Lap record is preserved (swapped, not modified). The == comparison on Lap datatypes ensures all fields are identical.",
       "source": "analyzed"
     },
     {
@@ -138,7 +138,7 @@
       "line": 29,
       "status": "proven",
       "obligation": "TalkTimer.MoveUpFirstNoEffect ensures: Apply(m, MoveUp(0)) == m",
-      "details": "MoveUpFirstNoEffect lemma proves that moving the first lap up returns the unchanged model.",
+      "details": "MoveUpFirstNoEffect lemma proves that MoveUp(0) returns the model unchanged.",
       "source": "analyzed"
     },
     {
@@ -148,7 +148,7 @@
       "line": 30,
       "status": "proven",
       "obligation": "TalkTimer.MoveDownLastNoEffect ensures: Apply(m, MoveDown(|m.laps| - 1)) == m",
-      "details": "MoveDownLastNoEffect lemma proves that moving the last lap down returns the unchanged model.",
+      "details": "MoveDownLastNoEffect lemma proves that MoveDown on the last lap returns the model unchanged.",
       "source": "analyzed"
     },
     {
@@ -157,8 +157,8 @@
       "tag": "verified",
       "line": 34,
       "status": "proven",
-      "obligation": "TalkTimer.Apply(SetTemplate) definition",
-      "details": "SetTemplate action sets the template field to the provided seq<TemplateEntry>. StepPreservesInv ensures validity.",
+      "obligation": "TalkTimer.Apply case SetTemplate: Model(m.currentTime, m.lastLapTime, m.laps, labels)",
+      "details": "SetTemplate action stores the template queue in the model. StepPreservesInv maintains this is valid.",
       "source": "analyzed"
     },
     {
@@ -168,7 +168,7 @@
       "line": 35,
       "status": "proven",
       "obligation": "TalkTimer.ConsumeTemplateDecreasesQueue ensures: |Apply(m, ConsumeTemplate).template| == |m.template| - 1",
-      "details": "ConsumeTemplateDecreasesQueue proves the template queue decreases by one after consumption.",
+      "details": "ConsumeTemplateDecreasesQueue proves that consuming removes exactly one entry from the template queue.",
       "source": "analyzed"
     },
     {
@@ -178,7 +178,7 @@
       "line": 36,
       "status": "proven",
       "obligation": "TalkTimer.ConsumeTemplateSetsLabel ensures: Apply(m, ConsumeTemplate).laps[|m.laps|-1].section == m.template[0].section",
-      "details": "ConsumeTemplateSetsLabel lemma proves the last lap gets its section from the first template entry.",
+      "details": "ConsumeTemplateSetsLabel lemma proves the last lap's section is set to the first template entry's section.",
       "source": "analyzed"
     },
     {
@@ -188,7 +188,7 @@
       "line": 37,
       "status": "proven",
       "obligation": "TalkTimer.ConsumeTemplateSetsExpected ensures: Apply(m, ConsumeTemplate).laps[|m.laps|-1].expectedDuration == m.template[0].expectedDuration",
-      "details": "ConsumeTemplateSetsExpected lemma proves the expected duration is set from the template entry.",
+      "details": "ConsumeTemplateSetsExpected lemma proves the last lap's expectedDuration is set from the template entry.",
       "source": "analyzed"
     },
     {
@@ -198,7 +198,7 @@
       "line": 38,
       "status": "proven",
       "obligation": "TalkTimer.ConsumeTemplateDecreasesQueue ensures: |Apply(m, ConsumeTemplate).template| == |m.template| - 1",
-      "details": "Directly proven by ConsumeTemplateDecreasesQueue lemma.",
+      "details": "ConsumeTemplateDecreasesQueue explicitly proves the template length decreases by exactly 1.",
       "source": "analyzed"
     },
     {
@@ -208,7 +208,7 @@
       "line": 42,
       "status": "proven",
       "obligation": "TalkTimer.ImportPreservesExisting ensures: forall i | 0 <= i < |m.laps| :: Apply(m, ImportLaps(laps)).laps[i] == m.laps[i]",
-      "details": "ImportPreservesExisting lemma proves all existing laps are preserved at their original indices.",
+      "details": "ImportPreservesExisting lemma proves all existing laps remain unchanged after import.",
       "source": "analyzed"
     },
     {
@@ -218,7 +218,7 @@
       "line": 43,
       "status": "proven",
       "obligation": "TalkTimer.ImportAppendsToEnd ensures: |Apply(m, ImportLaps(laps)).laps| == |m.laps| + |ClampLaps(laps)|",
-      "details": "ImportAppendsToEnd proves imported laps are appended (combined with ImportPreservesExisting, this confirms append behavior).",
+      "details": "ImportAppendsToEnd proves the new lap count equals original plus imported. Combined with ImportPreservesExisting, this proves appending.",
       "source": "analyzed"
     },
     {
@@ -228,7 +228,7 @@
       "line": 44,
       "status": "proven",
       "obligation": "AppCore.UndoRedoRoundTrip ensures: Redo(Undo(h)) == h",
-      "details": "ImportLaps is a single action in the domain. The Kernel's UndoRedoRoundTrip proves that undoing then redoing returns to original state, implying atomicity of actions.",
+      "details": "The Kernel's undo/redo system treats ImportLaps as a single action. UndoRedoRoundTrip proves undo is reversible, meaning one undo removes the entire import.",
       "source": "analyzed"
     },
     {
@@ -237,8 +237,8 @@
       "tag": "verified",
       "line": 48,
       "status": "proven",
-      "obligation": "AppCore.UndoPreservesHistInv + AppCore.RedoPreservesHistInv + AppCore.DoPreservesHistInv",
-      "details": "The Kernel module proves undo/redo preserve history invariant. UndoRedoRoundTrip and RedoUndoRoundTrip prove round-trip behavior.",
+      "obligation": "AppCore.UndoRedoRoundTrip ensures: Redo(Undo(h)) == h",
+      "details": "UndoRedoRoundTrip and RedoUndoRoundTrip prove that undo and redo are inverses. DoPreservesHistInv proves all actions integrate with the history system.",
       "source": "analyzed"
     },
     {
@@ -247,8 +247,8 @@
       "tag": "verified",
       "line": 49,
       "status": "proven",
-      "obligation": "AppCore.UndoRedoRoundTrip ensures: Redo(Undo(h)) == h + RedoUndoRoundTrip ensures: Undo(Redo(h)) == h",
-      "details": "These round-trip lemmas prove that undo/redo are inverses, preserving complete history. DoHasNoRedoBranch ensures new actions clear redo branch.",
+      "obligation": "AppCore.DoPreservesHistInv ensures: HistInv(Do(h, a))",
+      "details": "DoPreservesHistInv proves the history invariant is maintained. DoHasNoRedoBranch ensures new actions clear the redo branch, preserving linear history.",
       "source": "analyzed"
     },
     {
@@ -257,8 +257,8 @@
       "tag": "trusted",
       "line": 53,
       "status": "n-a",
-      "obligation": "n/a",
-      "details": "UI behavior claim - not expressible in domain model, trusted as implementation concern.",
+      "obligation": "UI implementation (not in Dafny domain)",
+      "details": "Trusted UI claim - visual presentation not modeled in formal verification.",
       "source": "analyzed"
     },
     {
@@ -267,8 +267,8 @@
       "tag": "trusted",
       "line": 54,
       "status": "n-a",
-      "obligation": "n/a",
-      "details": "Visual design claim - not expressible in domain model, trusted as CSS/styling concern.",
+      "obligation": "UI implementation (not in Dafny domain)",
+      "details": "Trusted UI claim - styling not modeled in formal verification.",
       "source": "analyzed"
     },
     {
@@ -277,8 +277,8 @@
       "tag": "trusted",
       "line": 55,
       "status": "n-a",
-      "obligation": "n/a",
-      "details": "UI behavior claim - not expressible in domain model, trusted as implementation concern.",
+      "obligation": "UI implementation (not in Dafny domain)",
+      "details": "Trusted UI claim - visual feedback not modeled in formal verification.",
       "source": "analyzed"
     },
     {
@@ -287,37 +287,117 @@
       "tag": "trusted",
       "line": 56,
       "status": "n-a",
-      "obligation": "n/a",
-      "details": "Export feature claim - I/O operation not expressible in pure domain model, trusted.",
+      "obligation": "Export implementation (not in Dafny domain)",
+      "details": "Trusted implementation claim - export format not modeled in formal verification.",
       "source": "analyzed"
     },
     {
-      "id": "claim:trusted:60",
+      "id": "claim:verified:60",
+      "text": "Each lap can have zero or more tags",
+      "tag": "verified",
+      "line": 60,
+      "status": "proven",
+      "obligation": "TalkTimer.Lap datatype with tags: seq<string>",
+      "details": "The Lap datatype has a tags field of type seq<string>, which can hold zero or more strings. StepPreservesInv maintains validity.",
+      "source": "analyzed"
+    },
+    {
+      "id": "claim:verified:61",
+      "text": "Adding a tag to a lap makes it present in the lap's tags",
+      "tag": "verified",
+      "line": 61,
+      "status": "proven",
+      "obligation": "TalkTimer.AddTagAddsTag ensures: TagIn(tag, Apply(m, AddTag(idx, tag)).laps[idx].tags)",
+      "details": "AddTagAddsTag lemma proves the tag is present in the lap's tags after AddTag action.",
+      "source": "analyzed"
+    },
+    {
+      "id": "claim:verified:62",
+      "text": "Removing a tag from a lap makes it absent from the lap's tags",
+      "tag": "verified",
+      "line": 62,
+      "status": "proven",
+      "obligation": "TalkTimer.RemoveTagRemovesTag ensures: !TagIn(tag, Apply(m, RemoveTag(idx, tag)).laps[idx].tags)",
+      "details": "RemoveTagRemovesTag lemma proves the tag is not present in the lap's tags after RemoveTag action.",
+      "source": "analyzed"
+    },
+    {
+      "id": "claim:verified:63",
+      "text": "Adding a tag to a lap preserves other lap data",
+      "tag": "verified",
+      "line": 63,
+      "status": "proven",
+      "obligation": "TalkTimer.AddTagPreservesLapData ensures: Apply(m, AddTag(idx, tag)).laps[idx].duration == m.laps[idx].duration",
+      "details": "AddTagPreservesLapData lemma proves timestamp, duration, section, selected, and expectedDuration are all preserved.",
+      "source": "analyzed"
+    },
+    {
+      "id": "claim:verified:64",
+      "text": "Removing a tag from a lap preserves other lap data",
+      "tag": "verified",
+      "line": 64,
+      "status": "proven",
+      "obligation": "TalkTimer.RemoveTagPreservesLapData ensures: Apply(m, RemoveTag(idx, tag)).laps[idx].duration == m.laps[idx].duration",
+      "details": "RemoveTagPreservesLapData lemma proves timestamp, duration, section, selected, and expectedDuration are all preserved.",
+      "source": "analyzed"
+    },
+    {
+      "id": "claim:trusted:65",
+      "text": "Tags are displayed as chips on each lap",
+      "tag": "trusted",
+      "line": 65,
+      "status": "n-a",
+      "obligation": "UI implementation (not in Dafny domain)",
+      "details": "Trusted UI claim - visual presentation not modeled in formal verification.",
+      "source": "analyzed"
+    },
+    {
+      "id": "claim:trusted:66",
+      "text": "Users can add tags via a + button",
+      "tag": "trusted",
+      "line": 66,
+      "status": "n-a",
+      "obligation": "UI implementation (not in Dafny domain)",
+      "details": "Trusted UI claim - button interaction not modeled in formal verification.",
+      "source": "analyzed"
+    },
+    {
+      "id": "claim:trusted:67",
+      "text": "Total time by tag is displayed for selected laps",
+      "tag": "trusted",
+      "line": 67,
+      "status": "n-a",
+      "obligation": "UI implementation (not in Dafny domain)",
+      "details": "Trusted UI claim - computed display not modeled in formal verification.",
+      "source": "analyzed"
+    },
+    {
+      "id": "claim:trusted:71",
       "text": "All primary functions are accessible via keyboard shortcuts for hands-free operation",
       "tag": "trusted",
-      "line": 60,
+      "line": 71,
       "status": "n-a",
-      "obligation": "n/a",
-      "details": "Accessibility claim - input handling not expressible in domain model, trusted.",
+      "obligation": "UI implementation (not in Dafny domain)",
+      "details": "Trusted UI claim - keyboard handling not modeled in formal verification.",
       "source": "analyzed"
     },
     {
-      "id": "claim:trusted:61",
+      "id": "claim:trusted:72",
       "text": "The app can be quickly shown and hidden during rehearsal",
       "tag": "trusted",
-      "line": 61,
+      "line": 72,
       "status": "n-a",
-      "obligation": "n/a",
-      "details": "Window management claim - OS interaction not expressible in domain model, trusted.",
+      "obligation": "UI implementation (not in Dafny domain)",
+      "details": "Trusted UI claim - window management not modeled in formal verification.",
       "source": "analyzed"
     }
   ],
   "summary": {
-    "proven": 25,
+    "proven": 30,
     "scaffolded": 0,
     "unproven": 0,
-    "na": 6,
-    "total": 31
+    "na": 9,
+    "total": 39
   },
-  "completedAt": "2026-02-07T03:23:14.042Z"
+  "completedAt": "2026-02-07T21:16:06.003Z"
 }

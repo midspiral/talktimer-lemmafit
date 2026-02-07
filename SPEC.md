@@ -65,6 +65,8 @@ A talk rehearsal timer that tracks lap times, organizes takes by section, and co
 - [trusted] Tags are displayed as chips on each lap
 - [trusted] Users can add tags via a + button
 - [trusted] Total time by tag is displayed for selected laps
+- [trusted] Tags are included in Markdown export
+- [trusted] Tags are parsed from Markdown import
 
 ## Feature: Keyboard & Accessibility
 
