@@ -13,7 +13,7 @@
       "conjuncts": [
         "tag in tags"
       ],
-      "line": 51,
+      "line": 52,
       "isGhost": false
     },
     {
@@ -23,7 +23,7 @@
       "conjuncts": [
         "forall i: int {:trigger laps[i]} | 0 <= i < |laps| :: laps[i].timestamp >= 0 && laps[i].duration >= 0 && laps[i].expectedDuration >= -1"
       ],
-      "line": 132,
+      "line": 158,
       "isGhost": true
     },
     {
@@ -36,7 +36,7 @@
         "m.lastLapTime <= m.currentTime",
         "LapsValid(m.laps)"
       ],
-      "line": 137,
+      "line": 163,
       "isGhost": true
     },
     {
@@ -46,7 +46,7 @@
       "conjuncts": [
         "tag in lap.tags"
       ],
-      "line": 543,
+      "line": 572,
       "isGhost": false
     },
     {
@@ -108,7 +108,7 @@
       "ensures": [
         "tag in AddTagToSeq(tags, tag)"
       ],
-      "line": 71
+      "line": 72
     },
     {
       "name": "RemoveTagEnsuresAbsence",
@@ -117,7 +117,7 @@
       "ensures": [
         "tag !in RemoveTagFromSeq(tags, tag)"
       ],
-      "line": 76
+      "line": 77
     },
     {
       "name": "RemoveTagPreservesOthers",
@@ -129,7 +129,7 @@
       "ensures": [
         "other in RemoveTagFromSeq(tags, tag)"
       ],
-      "line": 88
+      "line": 89
     },
     {
       "name": "InitSatisfiesInv",
@@ -139,7 +139,7 @@
         "Inv(Init())",
         "Inv(Init())"
       ],
-      "line": 264
+      "line": 293
     },
     {
       "name": "StepPreservesInv",
@@ -151,7 +151,7 @@
         "Inv(Normalize(Apply(m, a)))",
         "Inv(Normalize(Apply(m, a)))"
       ],
-      "line": 268
+      "line": 297
     },
     {
       "name": "ElapsedTimeNonNegative",
@@ -162,7 +162,7 @@
       "ensures": [
         "m.currentTime >= 0"
       ],
-      "line": 277
+      "line": 306
     },
     {
       "name": "LapDurationsNonNegative",
@@ -173,7 +173,7 @@
       "ensures": [
         "forall i: int {:trigger m.laps[i]} | 0 <= i < |m.laps| :: m.laps[i].duration >= 0"
       ],
-      "line": 283
+      "line": 312
     },
     {
       "name": "DeletePreservesDurations",
@@ -186,7 +186,7 @@
         "forall i: int {:trigger m.laps[i]} {:trigger Apply(m, DeleteLap(idx)).laps[i]} | 0 <= i < idx :: Apply(m, DeleteLap(idx)).laps[i].duration == m.laps[i].duration",
         "forall i: int {:trigger m.laps[i]} | idx < i < |m.laps| :: Apply(m, DeleteLap(idx)).laps[i - 1].duration == m.laps[i].duration"
       ],
-      "line": 289
+      "line": 318
     },
     {
       "name": "AdjustOnlyChangesDuration",
@@ -201,7 +201,7 @@
         "Apply(m, AdjustDuration(idx, dur)).laps[idx].section == m.laps[idx].section",
         "Apply(m, AdjustDuration(idx, dur)).laps[idx].selected == m.laps[idx].selected"
       ],
-      "line": 299
+      "line": 328
     },
     {
       "name": "SelectLapToggles",
@@ -213,7 +213,7 @@
       "ensures": [
         "Apply(m, SelectLap(idx)).laps[idx].selected == !m.laps[idx].selected"
       ],
-      "line": 309
+      "line": 338
     },
     {
       "name": "DeleteLapReducesCount",
@@ -225,7 +225,7 @@
       "ensures": [
         "|Apply(m, DeleteLap(idx)).laps| == |m.laps| - 1"
       ],
-      "line": 316
+      "line": 345
     },
     {
       "name": "MoveUpSwaps",
@@ -238,7 +238,7 @@
         "Apply(m, MoveUp(idx)).laps[idx - 1] == m.laps[idx]",
         "Apply(m, MoveUp(idx)).laps[idx] == m.laps[idx - 1]"
       ],
-      "line": 327
+      "line": 356
     },
     {
       "name": "MoveDownSwaps",
@@ -251,7 +251,7 @@
         "Apply(m, MoveDown(idx)).laps[idx] == m.laps[idx + 1]",
         "Apply(m, MoveDown(idx)).laps[idx + 1] == m.laps[idx]"
       ],
-      "line": 335
+      "line": 364
     },
     {
       "name": "MoveUpFirstNoEffect",
@@ -263,7 +263,7 @@
       "ensures": [
         "Apply(m, MoveUp(0)) == m"
       ],
-      "line": 343
+      "line": 372
     },
     {
       "name": "MoveDownLastNoEffect",
@@ -275,7 +275,7 @@
       "ensures": [
         "Apply(m, MoveDown(|m.laps| - 1)) == m"
       ],
-      "line": 350
+      "line": 379
     },
     {
       "name": "MovePreservesCount",
@@ -287,7 +287,7 @@
         "|Apply(m, MoveUp(idx)).laps| == |m.laps|",
         "|Apply(m, MoveDown(idx)).laps| == |m.laps|"
       ],
-      "line": 357
+      "line": 386
     },
     {
       "name": "AddTagPreservesLapData",
@@ -303,7 +303,7 @@
         "Apply(m, AddTag(idx, tag)).laps[idx].selected == m.laps[idx].selected",
         "Apply(m, AddTag(idx, tag)).laps[idx].expectedDuration == m.laps[idx].expectedDuration"
       ],
-      "line": 368
+      "line": 397
     },
     {
       "name": "RemoveTagPreservesLapData",
@@ -319,7 +319,7 @@
         "Apply(m, RemoveTag(idx, tag)).laps[idx].selected == m.laps[idx].selected",
         "Apply(m, RemoveTag(idx, tag)).laps[idx].expectedDuration == m.laps[idx].expectedDuration"
       ],
-      "line": 379
+      "line": 408
     },
     {
       "name": "AddTagAddsTag",
@@ -331,7 +331,7 @@
       "ensures": [
         "TagIn(tag, Apply(m, AddTag(idx, tag)).laps[idx].tags)"
       ],
-      "line": 390
+      "line": 419
     },
     {
       "name": "RemoveTagRemovesTag",
@@ -343,7 +343,7 @@
       "ensures": [
         "!TagIn(tag, Apply(m, RemoveTag(idx, tag)).laps[idx].tags)"
       ],
-      "line": 397
+      "line": 426
     },
     {
       "name": "ConsumeTemplateSetsLabel",
@@ -356,7 +356,7 @@
       "ensures": [
         "Apply(m, ConsumeTemplate).laps[|m.laps| - 1].section == m.template[0].section"
       ],
-      "line": 410
+      "line": 439
     },
     {
       "name": "ConsumeTemplateSetsExpected",
@@ -370,7 +370,7 @@
       "ensures": [
         "Apply(m, ConsumeTemplate).laps[|m.laps| - 1].expectedDuration == m.template[0].expectedDuration"
       ],
-      "line": 418
+      "line": 447
     },
     {
       "name": "ConsumeTemplateSetsTags",
@@ -383,7 +383,7 @@
       "ensures": [
         "Apply(m, ConsumeTemplate).laps[|m.laps| - 1].tags == m.template[0].tags"
       ],
-      "line": 427
+      "line": 456
     },
     {
       "name": "ConsumeTemplateSelectsLap",
@@ -396,7 +396,7 @@
       "ensures": [
         "Apply(m, ConsumeTemplate).laps[|m.laps| - 1].selected == true"
       ],
-      "line": 435
+      "line": 464
     },
     {
       "name": "ConsumeTemplateDecreasesQueue",
@@ -409,7 +409,7 @@
       "ensures": [
         "|Apply(m, ConsumeTemplate).template| == |m.template| - 1"
       ],
-      "line": 443
+      "line": 472
     },
     {
       "name": "ImportPreservesExisting",
@@ -420,7 +420,7 @@
       "ensures": [
         "forall i: int {:trigger m.laps[i]} {:trigger Apply(m, ImportLaps(laps)).laps[i]} | 0 <= i < |m.laps| :: Apply(m, ImportLaps(laps)).laps[i] == m.laps[i]"
       ],
-      "line": 455
+      "line": 484
     },
     {
       "name": "ImportAppendsToEnd",
@@ -431,7 +431,7 @@
       "ensures": [
         "|Apply(m, ImportLaps(laps)).laps| == |m.laps| + |ClampLaps(laps)|"
       ],
-      "line": 462
+      "line": 491
     },
     {
       "name": "SumOfNonNegativeIsNonNegative",
@@ -442,7 +442,7 @@
       "ensures": [
         "Sum(s) >= 0"
       ],
-      "line": 478
+      "line": 507
     },
     {
       "name": "SelectedTotalIsNonNegative",
@@ -453,7 +453,7 @@
       "ensures": [
         "Sum(durations) >= 0"
       ],
-      "line": 489
+      "line": 518
     },
     {
       "name": "SelectedTotalCorrect",
@@ -462,7 +462,7 @@
       "ensures": [
         "SelectedTotal(laps) == Sum(SelectedDurations(laps))"
       ],
-      "line": 515
+      "line": 544
     },
     {
       "name": "SelectedTotalNonNegative",
@@ -473,7 +473,7 @@
       "ensures": [
         "SelectedTotal(laps) >= 0"
       ],
-      "line": 520
+      "line": 549
     },
     {
       "name": "SelectedDurationsNonNegative",
@@ -484,7 +484,7 @@
       "ensures": [
         "forall i: int {:trigger SelectedDurations(laps)[i]} | 0 <= i < |SelectedDurations(laps)| :: SelectedDurations(laps)[i] >= 0"
       ],
-      "line": 528
+      "line": 557
     },
     {
       "name": "SumByTagNonNegative",
@@ -495,7 +495,7 @@
       "ensures": [
         "SumByTag(laps, tag) >= 0"
       ],
-      "line": 558
+      "line": 587
     },
     {
       "name": "SumByTagOnlySelected",
@@ -507,7 +507,7 @@
       "ensures": [
         "SumByTag(laps, tag) == SumByTag(laps[1..], tag)"
       ],
-      "line": 569
+      "line": 598
     },
     {
       "name": "SumByTagOnlyTagged",
@@ -520,7 +520,7 @@
       "ensures": [
         "SumByTag(laps, tag) == SumByTag(laps[1..], tag)"
       ],
-      "line": 576
+      "line": 605
     },
     {
       "name": "SumByTagIncludesDuration",
@@ -533,7 +533,7 @@
       "ensures": [
         "SumByTag(laps, tag) == laps[0].duration + SumByTag(laps[1..], tag)"
       ],
-      "line": 584
+      "line": 613
     },
     {
       "name": "ConsumeTemplateRoundTrip",
@@ -546,7 +546,7 @@
       "ensures": [
         "ghost var result: Model := Apply(m, ConsumeTemplate); ghost var idx: int := |m.laps| - 1; ghost var entry: TemplateEntry := m.template[0]; result.laps[idx].section == entry.section && result.laps[idx].selected == true && result.laps[idx].tags == entry.tags && (entry.expectedDuration >= 0 ==> result.laps[idx].expectedDuration == entry.expectedDuration)"
       ],
-      "line": 596
+      "line": 625
     },
     {
       "name": "ConsumeTemplatePreservesDuration",
@@ -559,7 +559,7 @@
       "ensures": [
         "Apply(m, ConsumeTemplate).laps[|m.laps| - 1].duration == m.laps[|m.laps| - 1].duration"
       ],
-      "line": 610
+      "line": 639
     },
     {
       "name": "ConsumeTemplatePreservesTimestamp",
@@ -572,7 +572,81 @@
       "ensures": [
         "Apply(m, ConsumeTemplate).laps[|m.laps| - 1].timestamp == m.laps[|m.laps| - 1].timestamp"
       ],
-      "line": 618
+      "line": 647
+    },
+    {
+      "name": "ResetRestoresOriginalTemplate",
+      "module": "TalkTimer",
+      "requires": [
+        "Inv(m)",
+        "|m.originalTemplate| > 0"
+      ],
+      "ensures": [
+        "|Apply(m, Reset).laps| == |m.originalTemplate|",
+        "Apply(m, Reset).laps == TemplateToLaps(m.originalTemplate)"
+      ],
+      "line": 659
+    },
+    {
+      "name": "ResetClearsTemplate",
+      "module": "TalkTimer",
+      "requires": [
+        "Inv(m)",
+        "|m.originalTemplate| > 0"
+      ],
+      "ensures": [
+        "|Apply(m, Reset).template| == 0",
+        "|Apply(m, Reset).originalTemplate| == 0"
+      ],
+      "line": 667
+    },
+    {
+      "name": "ResetRestoresCorrectSections",
+      "module": "TalkTimer",
+      "requires": [
+        "Inv(m)",
+        "|m.originalTemplate| > 0",
+        "0 <= i < |m.originalTemplate|"
+      ],
+      "ensures": [
+        "Apply(m, Reset).laps[i].section == m.originalTemplate[i].section"
+      ],
+      "line": 675
+    },
+    {
+      "name": "TemplateToLapsPreservesSection",
+      "module": "TalkTimer",
+      "requires": [
+        "0 <= i < |template|"
+      ],
+      "ensures": [
+        "TemplateToLaps(template)[i].section == template[i].section"
+      ],
+      "line": 685
+    },
+    {
+      "name": "ResetRestoresCorrectTags",
+      "module": "TalkTimer",
+      "requires": [
+        "Inv(m)",
+        "|m.originalTemplate| > 0",
+        "0 <= i < |m.originalTemplate|"
+      ],
+      "ensures": [
+        "Apply(m, Reset).laps[i].tags == m.originalTemplate[i].tags"
+      ],
+      "line": 696
+    },
+    {
+      "name": "TemplateToLapsPreservesTags",
+      "module": "TalkTimer",
+      "requires": [
+        "0 <= i < |template|"
+      ],
+      "ensures": [
+        "TemplateToLaps(template)[i].tags == template[i].tags"
+      ],
+      "line": 706
     },
     {
       "name": "InitSatisfiesInv",
@@ -876,7 +950,28 @@
         "ClampLap(lap).duration >= 0",
         "ClampLap(lap).expectedDuration >= -1"
       ],
-      "line": 104
+      "line": 105
+    },
+    {
+      "name": "TemplateEntryToLap",
+      "module": "TalkTimer",
+      "requires": [],
+      "ensures": [
+        "TemplateEntryToLap(entry).timestamp >= 0",
+        "TemplateEntryToLap(entry).duration >= 0",
+        "TemplateEntryToLap(entry).expectedDuration == -1"
+      ],
+      "line": 121
+    },
+    {
+      "name": "TemplateToLaps",
+      "module": "TalkTimer",
+      "requires": [],
+      "ensures": [
+        "|TemplateToLaps(template)| == |template|",
+        "LapsValid(TemplateToLaps(template))"
+      ],
+      "line": 137
     },
     {
       "name": "ClampLaps",
@@ -887,7 +982,7 @@
         "forall i: int {:trigger laps[i]} {:trigger ClampLaps(laps)[i]} | 0 <= i < |laps| :: ClampLaps(laps)[i] == ClampLap(laps[i])",
         "LapsValid(ClampLaps(laps))"
       ],
-      "line": 119
+      "line": 145
     },
     {
       "name": "Init",
@@ -896,7 +991,7 @@
       "ensures": [
         "Inv(Init())"
       ],
-      "line": 148
+      "line": 174
     },
     {
       "name": "Apply",
@@ -905,7 +1000,7 @@
         "Inv(m)"
       ],
       "ensures": [],
-      "line": 154
+      "line": 180
     },
     {
       "name": "Sum",
@@ -914,7 +1009,7 @@
       "ensures": [
         "|s| == 0 ==> Sum(s) == 0"
       ],
-      "line": 471
+      "line": 500
     },
     {
       "name": "Apply",

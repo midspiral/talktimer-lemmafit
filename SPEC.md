@@ -42,6 +42,10 @@ A talk rehearsal timer that tracks lap times, organizes takes by section, and co
 - [verified] Consuming template sets all fields (section, selected, tags, expected) from entry
 - [verified] Consuming template preserves original lap duration
 - [verified] Consuming template preserves original lap timestamp
+- [verified] Reset in practice mode restores ORIGINAL template as laps (not remaining)
+- [verified] Reset in practice mode clears both template and originalTemplate (exits practice mode)
+- [verified] Reset in practice mode: each restored lap has correct section from original template
+- [verified] Reset in practice mode: each restored lap has correct tags from original template
 
 ## Feature: Import/Export
 

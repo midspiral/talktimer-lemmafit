@@ -23,7 +23,8 @@ module TalkTimer refines Domain {
     currentTime: int,   // current elapsed ms
     lastLapTime: int,   // timestamp of previous lap (for computing next duration)
     laps: seq<Lap>,     // recorded lap markers
-    template: seq<TemplateEntry>  // practice mode template queue
+    template: seq<TemplateEntry>,  // practice mode template queue (remaining)
+    originalTemplate: seq<TemplateEntry>  // original template for reset
   )
 
   // User actions
@@ -116,6 +117,31 @@ module TalkTimer refines Domain {
     )
   }
 
+  // Convert a template entry back to a lap
+  function TemplateEntryToLap(entry: TemplateEntry): Lap
+    ensures TemplateEntryToLap(entry).timestamp >= 0
+    ensures TemplateEntryToLap(entry).duration >= 0
+    ensures TemplateEntryToLap(entry).expectedDuration == -1
+  {
+    Lap(
+      0,  // timestamp
+      if entry.expectedDuration >= 0 then entry.expectedDuration else 0,  // duration from expected
+      entry.section,
+      true,  // selected
+      -1,    // no expected duration (it's not practice mode anymore)
+      entry.tags
+    )
+  }
+
+  // Convert all template entries to laps
+  function TemplateToLaps(template: seq<TemplateEntry>): seq<Lap>
+    ensures |TemplateToLaps(template)| == |template|
+    ensures LapsValid(TemplateToLaps(template))
+  {
+    if |template| == 0 then []
+    else [TemplateEntryToLap(template[0])] + TemplateToLaps(template[1..])
+  }
+
   function ClampLaps(laps: seq<Lap>): seq<Lap>
     ensures |ClampLaps(laps)| == |laps|
     ensures forall i | 0 <= i < |laps| :: ClampLaps(laps)[i] == ClampLap(laps[i])
@@ -148,7 +174,7 @@ module TalkTimer refines Domain {
   function Init(): Model
     ensures Inv(Init())
   {
-    Model(0, 0, [], [])
+    Model(0, 0, [], [], [])
   }
 
   function Apply(m: Model, a: Action): Model
@@ -156,32 +182,32 @@ module TalkTimer refines Domain {
     match a
       case SetTime(ms) =>
         // Only allow time to advance forward
-        if ms >= m.currentTime then Model(ms, m.lastLapTime, m.laps, m.template) else m
+        if ms >= m.currentTime then Model(ms, m.lastLapTime, m.laps, m.template, m.originalTemplate) else m
 
       case CreateLap =>
         // Record lap with duration from last lap time
         var duration := m.currentTime - m.lastLapTime;
         var newLap := Lap(m.currentTime, duration, "", false, -1, []);
-        Model(m.currentTime, m.currentTime, m.laps + [newLap], m.template)
+        Model(m.currentTime, m.currentTime, m.laps + [newLap], m.template, m.originalTemplate)
 
       case LabelLap(idx, name) =>
         if 0 <= idx < |m.laps| then
           Model(m.currentTime, m.lastLapTime,
-                m.laps[idx := m.laps[idx].(section := name)], m.template)
+                m.laps[idx := m.laps[idx].(section := name)], m.template, m.originalTemplate)
         else
           m
 
       case SelectLap(idx) =>
         if 0 <= idx < |m.laps| then
           Model(m.currentTime, m.lastLapTime,
-                m.laps[idx := m.laps[idx].(selected := !m.laps[idx].selected)], m.template)
+                m.laps[idx := m.laps[idx].(selected := !m.laps[idx].selected)], m.template, m.originalTemplate)
         else
           m
 
       case DeleteLap(idx) =>
         // Delete lap - other laps keep their stored durations
         if 0 <= idx < |m.laps| then
-          Model(m.currentTime, m.lastLapTime, m.laps[..idx] + m.laps[idx+1..], m.template)
+          Model(m.currentTime, m.lastLapTime, m.laps[..idx] + m.laps[idx+1..], m.template, m.originalTemplate)
         else
           m
 
@@ -189,7 +215,7 @@ module TalkTimer refines Domain {
         // Manually set duration (must be non-negative)
         if 0 <= idx < |m.laps| && duration >= 0 then
           Model(m.currentTime, m.lastLapTime,
-                m.laps[idx := m.laps[idx].(duration := duration)], m.template)
+                m.laps[idx := m.laps[idx].(duration := duration)], m.template, m.originalTemplate)
         else
           m
 
@@ -197,7 +223,7 @@ module TalkTimer refines Domain {
         // Swap lap with the one above it
         if 1 <= idx < |m.laps| then
           var newLaps := m.laps[idx-1 := m.laps[idx]][idx := m.laps[idx-1]];
-          Model(m.currentTime, m.lastLapTime, newLaps, m.template)
+          Model(m.currentTime, m.lastLapTime, newLaps, m.template, m.originalTemplate)
         else
           m
 
@@ -205,7 +231,7 @@ module TalkTimer refines Domain {
         // Swap lap with the one below it
         if 0 <= idx < |m.laps| - 1 then
           var newLaps := m.laps[idx := m.laps[idx+1]][idx+1 := m.laps[idx]];
-          Model(m.currentTime, m.lastLapTime, newLaps, m.template)
+          Model(m.currentTime, m.lastLapTime, newLaps, m.template, m.originalTemplate)
         else
           m
 
@@ -214,7 +240,7 @@ module TalkTimer refines Domain {
         if 0 <= idx < |m.laps| then
           var newTags := AddTagToSeq(m.laps[idx].tags, tag);
           Model(m.currentTime, m.lastLapTime,
-                m.laps[idx := m.laps[idx].(tags := newTags)], m.template)
+                m.laps[idx := m.laps[idx].(tags := newTags)], m.template, m.originalTemplate)
         else
           m
 
@@ -223,13 +249,13 @@ module TalkTimer refines Domain {
         if 0 <= idx < |m.laps| then
           var newTags := RemoveTagFromSeq(m.laps[idx].tags, tag);
           Model(m.currentTime, m.lastLapTime,
-                m.laps[idx := m.laps[idx].(tags := newTags)], m.template)
+                m.laps[idx := m.laps[idx].(tags := newTags)], m.template, m.originalTemplate)
         else
           m
 
       case SetTemplate(labels) =>
-        // Set the practice template queue
-        Model(m.currentTime, m.lastLapTime, m.laps, labels)
+        // Set the practice template queue and store original for reset
+        Model(m.currentTime, m.lastLapTime, m.laps, labels, labels)
 
       case ConsumeTemplate =>
         // Label last lap from template and select it, set expected duration and tags
@@ -238,7 +264,7 @@ module TalkTimer refines Domain {
           var entry := m.template[0];
           var expectedDur := if entry.expectedDuration >= 0 then entry.expectedDuration else -1;
           var newLaps := m.laps[idx := m.laps[idx].(section := entry.section, selected := true, expectedDuration := expectedDur, tags := entry.tags)];
-          Model(m.currentTime, m.lastLapTime, newLaps, m.template[1..])
+          Model(m.currentTime, m.lastLapTime, newLaps, m.template[1..], m.originalTemplate)
         else
           m
 
@@ -246,11 +272,14 @@ module TalkTimer refines Domain {
         // Import multiple laps at once (for paste import)
         // Clamp values to ensure validity
         var validLaps := ClampLaps(laps);
-        Model(m.currentTime, m.lastLapTime, m.laps + validLaps, m.template)
+        Model(m.currentTime, m.lastLapTime, m.laps + validLaps, m.template, m.originalTemplate)
 
       case Reset =>
-        // Clear all laps, reset lastLapTime to current time, clear template
-        Model(m.currentTime, m.currentTime, [], [])
+        // If in practice mode, restore original template as laps; otherwise clear all
+        if |m.originalTemplate| > 0 then
+          Model(m.currentTime, m.currentTime, TemplateToLaps(m.originalTemplate), [], [])
+        else
+          Model(m.currentTime, m.currentTime, [], [], [])
   }
 
   function Normalize(m: Model): Model {
@@ -621,6 +650,68 @@ module TalkTimer refines Domain {
     requires |m.laps| > 0
     ensures Apply(m, ConsumeTemplate).laps[|m.laps|-1].timestamp == m.laps[|m.laps|-1].timestamp
   {}
+
+  //----------------------------------------------------------------------
+  // Reset from Practice Mode Lemmas
+  //----------------------------------------------------------------------
+
+  // [verified] Reset in practice mode restores original template as laps
+  lemma ResetRestoresOriginalTemplate(m: Model)
+    requires Inv(m)
+    requires |m.originalTemplate| > 0
+    ensures |Apply(m, Reset).laps| == |m.originalTemplate|
+    ensures Apply(m, Reset).laps == TemplateToLaps(m.originalTemplate)
+  {}
+
+  // [verified] Reset in practice mode clears template (exits practice mode)
+  lemma ResetClearsTemplate(m: Model)
+    requires Inv(m)
+    requires |m.originalTemplate| > 0
+    ensures |Apply(m, Reset).template| == 0
+    ensures |Apply(m, Reset).originalTemplate| == 0
+  {}
+
+  // [verified] Reset in practice mode: each restored lap has correct section from original template
+  lemma ResetRestoresCorrectSections(m: Model, i: int)
+    requires Inv(m)
+    requires |m.originalTemplate| > 0
+    requires 0 <= i < |m.originalTemplate|
+    ensures Apply(m, Reset).laps[i].section == m.originalTemplate[i].section
+  {
+    TemplateToLapsPreservesSection(m.originalTemplate, i);
+  }
+
+  // Helper: TemplateToLaps preserves section at each index
+  lemma TemplateToLapsPreservesSection(template: seq<TemplateEntry>, i: int)
+    requires 0 <= i < |template|
+    ensures TemplateToLaps(template)[i].section == template[i].section
+  {
+    if i == 0 {
+    } else {
+      TemplateToLapsPreservesSection(template[1..], i - 1);
+    }
+  }
+
+  // [verified] Reset in practice mode: each restored lap has correct tags from original template
+  lemma ResetRestoresCorrectTags(m: Model, i: int)
+    requires Inv(m)
+    requires |m.originalTemplate| > 0
+    requires 0 <= i < |m.originalTemplate|
+    ensures Apply(m, Reset).laps[i].tags == m.originalTemplate[i].tags
+  {
+    TemplateToLapsPreservesTags(m.originalTemplate, i);
+  }
+
+  // Helper: TemplateToLaps preserves tags at each index
+  lemma TemplateToLapsPreservesTags(template: seq<TemplateEntry>, i: int)
+    requires 0 <= i < |template|
+    ensures TemplateToLaps(template)[i].tags == template[i].tags
+  {
+    if i == 0 {
+    } else {
+      TemplateToLapsPreservesTags(template[1..], i - 1);
+    }
+  }
 }
 
 // AppCore: concrete Kernel instantiated with TalkTimer domain
