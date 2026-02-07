@@ -28,6 +28,8 @@ module TalkTimer refines Domain {
     | SelectLap(idx: int)                   // toggle selection of a lap
     | DeleteLap(idx: int)                   // remove a lap
     | AdjustDuration(idx: int, duration: int)  // manually adjust lap duration
+    | MoveUp(idx: int)                      // move lap up (swap with previous)
+    | MoveDown(idx: int)                    // move lap down (swap with next)
     | Reset                                 // clear all laps
 
   //----------------------------------------------------------------------
@@ -95,6 +97,22 @@ module TalkTimer refines Domain {
         if 0 <= idx < |m.laps| && duration >= 0 then
           Model(m.currentTime, m.lastLapTime,
                 m.laps[idx := m.laps[idx].(duration := duration)])
+        else
+          m
+
+      case MoveUp(idx) =>
+        // Swap lap with the one above it
+        if 1 <= idx < |m.laps| then
+          var newLaps := m.laps[idx-1 := m.laps[idx]][idx := m.laps[idx-1]];
+          Model(m.currentTime, m.lastLapTime, newLaps)
+        else
+          m
+
+      case MoveDown(idx) =>
+        // Swap lap with the one below it
+        if 0 <= idx < |m.laps| - 1 then
+          var newLaps := m.laps[idx := m.laps[idx+1]][idx+1 := m.laps[idx]];
+          Model(m.currentTime, m.lastLapTime, newLaps)
         else
           m
 

@@ -76,6 +76,8 @@ export type Action =
   | { type: 'SelectLap'; idx: number }
   | { type: 'DeleteLap'; idx: number }
   | { type: 'AdjustDuration'; idx: number; duration: number }
+  | { type: 'MoveUp'; idx: number }
+  | { type: 'MoveDown'; idx: number }
   | { type: 'Reset' };
 
 export interface History {
@@ -120,7 +122,7 @@ interface DafnyModel {
   readonly dtor_laps: DafnySeq<DafnyLap>;
 }
 
-type DafnyAction = { readonly is_SetTime: true; readonly is_CreateLap: false; readonly is_LabelLap: false; readonly is_SelectLap: false; readonly is_DeleteLap: false; readonly is_AdjustDuration: false; readonly is_Reset: false; readonly dtor_ms: DafnyInt } | { readonly is_SetTime: false; readonly is_CreateLap: true; readonly is_LabelLap: false; readonly is_SelectLap: false; readonly is_DeleteLap: false; readonly is_AdjustDuration: false; readonly is_Reset: false } | { readonly is_SetTime: false; readonly is_CreateLap: false; readonly is_LabelLap: true; readonly is_SelectLap: false; readonly is_DeleteLap: false; readonly is_AdjustDuration: false; readonly is_Reset: false; readonly dtor_idx: DafnyInt; readonly dtor_name: DafnySeq } | { readonly is_SetTime: false; readonly is_CreateLap: false; readonly is_LabelLap: false; readonly is_SelectLap: true; readonly is_DeleteLap: false; readonly is_AdjustDuration: false; readonly is_Reset: false; readonly dtor_idx: DafnyInt } | { readonly is_SetTime: false; readonly is_CreateLap: false; readonly is_LabelLap: false; readonly is_SelectLap: false; readonly is_DeleteLap: true; readonly is_AdjustDuration: false; readonly is_Reset: false; readonly dtor_idx: DafnyInt } | { readonly is_SetTime: false; readonly is_CreateLap: false; readonly is_LabelLap: false; readonly is_SelectLap: false; readonly is_DeleteLap: false; readonly is_AdjustDuration: true; readonly is_Reset: false; readonly dtor_idx: DafnyInt; readonly dtor_duration: DafnyInt } | { readonly is_SetTime: false; readonly is_CreateLap: false; readonly is_LabelLap: false; readonly is_SelectLap: false; readonly is_DeleteLap: false; readonly is_AdjustDuration: false; readonly is_Reset: true };
+type DafnyAction = { readonly is_SetTime: true; readonly is_CreateLap: false; readonly is_LabelLap: false; readonly is_SelectLap: false; readonly is_DeleteLap: false; readonly is_AdjustDuration: false; readonly is_MoveUp: false; readonly is_MoveDown: false; readonly is_Reset: false; readonly dtor_ms: DafnyInt } | { readonly is_SetTime: false; readonly is_CreateLap: true; readonly is_LabelLap: false; readonly is_SelectLap: false; readonly is_DeleteLap: false; readonly is_AdjustDuration: false; readonly is_MoveUp: false; readonly is_MoveDown: false; readonly is_Reset: false } | { readonly is_SetTime: false; readonly is_CreateLap: false; readonly is_LabelLap: true; readonly is_SelectLap: false; readonly is_DeleteLap: false; readonly is_AdjustDuration: false; readonly is_MoveUp: false; readonly is_MoveDown: false; readonly is_Reset: false; readonly dtor_idx: DafnyInt; readonly dtor_name: DafnySeq } | { readonly is_SetTime: false; readonly is_CreateLap: false; readonly is_LabelLap: false; readonly is_SelectLap: true; readonly is_DeleteLap: false; readonly is_AdjustDuration: false; readonly is_MoveUp: false; readonly is_MoveDown: false; readonly is_Reset: false; readonly dtor_idx: DafnyInt } | { readonly is_SetTime: false; readonly is_CreateLap: false; readonly is_LabelLap: false; readonly is_SelectLap: false; readonly is_DeleteLap: true; readonly is_AdjustDuration: false; readonly is_MoveUp: false; readonly is_MoveDown: false; readonly is_Reset: false; readonly dtor_idx: DafnyInt } | { readonly is_SetTime: false; readonly is_CreateLap: false; readonly is_LabelLap: false; readonly is_SelectLap: false; readonly is_DeleteLap: false; readonly is_AdjustDuration: true; readonly is_MoveUp: false; readonly is_MoveDown: false; readonly is_Reset: false; readonly dtor_idx: DafnyInt; readonly dtor_duration: DafnyInt } | { readonly is_SetTime: false; readonly is_CreateLap: false; readonly is_LabelLap: false; readonly is_SelectLap: false; readonly is_DeleteLap: false; readonly is_AdjustDuration: false; readonly is_MoveUp: true; readonly is_MoveDown: false; readonly is_Reset: false; readonly dtor_idx: DafnyInt } | { readonly is_SetTime: false; readonly is_CreateLap: false; readonly is_LabelLap: false; readonly is_SelectLap: false; readonly is_DeleteLap: false; readonly is_AdjustDuration: false; readonly is_MoveUp: false; readonly is_MoveDown: true; readonly is_Reset: false; readonly dtor_idx: DafnyInt } | { readonly is_SetTime: false; readonly is_CreateLap: false; readonly is_LabelLap: false; readonly is_SelectLap: false; readonly is_DeleteLap: false; readonly is_AdjustDuration: false; readonly is_MoveUp: false; readonly is_MoveDown: false; readonly is_Reset: true };
 
 interface DafnyHistory {
   readonly is_History: true;
@@ -204,6 +206,16 @@ const actionFromJson = (json: any): DafnyAction => {
         new BigNumber(json.duration)
       );
     }
+    case 'MoveUp': {
+      return TalkTimer.Action.create_MoveUp(
+        new BigNumber(json.idx)
+      );
+    }
+    case 'MoveDown': {
+      return TalkTimer.Action.create_MoveDown(
+        new BigNumber(json.idx)
+      );
+    }
     case 'Reset': {
       return TalkTimer.Action.create_Reset();
     }
@@ -242,6 +254,16 @@ const actionToJson = (value: any): Action => {
       type: 'AdjustDuration',
       idx: toNumber(value.dtor_idx),
       duration: toNumber(value.dtor_duration)
+    };
+  } else if (value.is_MoveUp) {
+    return {
+      type: 'MoveUp',
+      idx: toNumber(value.dtor_idx)
+    };
+  } else if (value.is_MoveDown) {
+    return {
+      type: 'MoveDown',
+      idx: toNumber(value.dtor_idx)
     };
   } else if (value.is_Reset) {
     return { type: 'Reset' };
@@ -284,6 +306,8 @@ const App = {
   SelectLap: (idx: number) => TalkTimer.Action.create_SelectLap(new BigNumber(idx)),
   DeleteLap: (idx: number) => TalkTimer.Action.create_DeleteLap(new BigNumber(idx)),
   AdjustDuration: (idx: number, duration: number) => TalkTimer.Action.create_AdjustDuration(new BigNumber(idx), new BigNumber(duration)),
+  MoveUp: (idx: number) => TalkTimer.Action.create_MoveUp(new BigNumber(idx)),
+  MoveDown: (idx: number) => TalkTimer.Action.create_MoveDown(new BigNumber(idx)),
   Reset: () => TalkTimer.Action.create_Reset(),
 
   // Model accessors

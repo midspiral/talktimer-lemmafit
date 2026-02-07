@@ -13,7 +13,7 @@
       "conjuncts": [
         "forall i: int {:trigger laps[i]} | 0 <= i < |laps| :: laps[i].timestamp >= 0 && laps[i].duration >= 0"
       ],
-      "line": 37,
+      "line": 39,
       "isGhost": true
     },
     {
@@ -26,7 +26,7 @@
         "m.lastLapTime <= m.currentTime",
         "LapsValid(m.laps)"
       ],
-      "line": 42,
+      "line": 44,
       "isGhost": true
     },
     {
@@ -89,7 +89,7 @@
         "Inv(Init())",
         "Inv(Init())"
       ],
-      "line": 114
+      "line": 132
     },
     {
       "name": "StepPreservesInv",
@@ -101,7 +101,7 @@
         "Inv(Normalize(Apply(m, a)))",
         "Inv(Normalize(Apply(m, a)))"
       ],
-      "line": 118
+      "line": 136
     },
     {
       "name": "ElapsedTimeNonNegative",
@@ -112,7 +112,7 @@
       "ensures": [
         "m.currentTime >= 0"
       ],
-      "line": 127
+      "line": 145
     },
     {
       "name": "LapDurationsNonNegative",
@@ -123,7 +123,7 @@
       "ensures": [
         "forall i: int {:trigger m.laps[i]} | 0 <= i < |m.laps| :: m.laps[i].duration >= 0"
       ],
-      "line": 133
+      "line": 151
     },
     {
       "name": "DeletePreservesDurations",
@@ -136,7 +136,7 @@
         "forall i: int {:trigger m.laps[i]} {:trigger Apply(m, DeleteLap(idx)).laps[i]} | 0 <= i < idx :: Apply(m, DeleteLap(idx)).laps[i].duration == m.laps[i].duration",
         "forall i: int {:trigger m.laps[i]} | idx < i < |m.laps| :: Apply(m, DeleteLap(idx)).laps[i - 1].duration == m.laps[i].duration"
       ],
-      "line": 139
+      "line": 157
     },
     {
       "name": "AdjustOnlyChangesDuration",
@@ -151,7 +151,7 @@
         "Apply(m, AdjustDuration(idx, dur)).laps[idx].section == m.laps[idx].section",
         "Apply(m, AdjustDuration(idx, dur)).laps[idx].selected == m.laps[idx].selected"
       ],
-      "line": 149
+      "line": 167
     },
     {
       "name": "SelectLapToggles",
@@ -163,7 +163,7 @@
       "ensures": [
         "Apply(m, SelectLap(idx)).laps[idx].selected == !m.laps[idx].selected"
       ],
-      "line": 159
+      "line": 177
     },
     {
       "name": "DeleteLapReducesCount",
@@ -175,7 +175,7 @@
       "ensures": [
         "|Apply(m, DeleteLap(idx)).laps| == |m.laps| - 1"
       ],
-      "line": 166
+      "line": 184
     },
     {
       "name": "SumOfNonNegativeIsNonNegative",
@@ -186,7 +186,7 @@
       "ensures": [
         "Sum(s) >= 0"
       ],
-      "line": 183
+      "line": 201
     },
     {
       "name": "SelectedTotalIsNonNegative",
@@ -197,7 +197,7 @@
       "ensures": [
         "Sum(durations) >= 0"
       ],
-      "line": 194
+      "line": 212
     },
     {
       "name": "InitSatisfiesInv",
@@ -499,7 +499,7 @@
       "ensures": [
         "Inv(Init())"
       ],
-      "line": 53
+      "line": 55
     },
     {
       "name": "Apply",
@@ -508,7 +508,7 @@
         "Inv(m)"
       ],
       "ensures": [],
-      "line": 59
+      "line": 61
     },
     {
       "name": "Sum",
@@ -517,7 +517,7 @@
       "ensures": [
         "|s| == 0 ==> Sum(s) == 0"
       ],
-      "line": 176
+      "line": 194
     },
     {
       "name": "Apply",

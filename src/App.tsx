@@ -164,6 +164,16 @@ function App() {
     dispatch({ type: 'DeleteLap', idx })
   }
 
+  // Move lap up
+  const moveUp = (idx: number) => {
+    dispatch({ type: 'MoveUp', idx })
+  }
+
+  // Move lap down
+  const moveDown = (idx: number) => {
+    dispatch({ type: 'MoveDown', idx })
+  }
+
   // Start editing a lap label
   const startEditingSection = (idx: number) => {
     setEditingLap(idx)
@@ -315,6 +325,23 @@ function App() {
                       {lap.section || 'Click to label...'}
                     </span>
                   )}
+
+                  <button
+                    className="move-btn"
+                    onClick={() => moveUp(idx)}
+                    disabled={idx === 0}
+                    title="Move up"
+                  >
+                    ↑
+                  </button>
+                  <button
+                    className="move-btn"
+                    onClick={() => moveDown(idx)}
+                    disabled={idx === model.laps.length - 1}
+                    title="Move down"
+                  >
+                    ↓
+                  </button>
 
                   <button
                     className="delete-btn"
