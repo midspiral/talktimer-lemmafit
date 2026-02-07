@@ -373,8 +373,8 @@ function App() {
         </button>
         <button
           onClick={resetTimer}
-          className={`control-btn reset-btn ${model.laps.length === 0 ? 'hidden' : ''}`}
-          disabled={model.laps.length === 0}
+          className={`control-btn reset-btn ${model.laps.length === 0 && model.originalTemplate.length === 0 ? 'hidden' : ''}`}
+          disabled={model.laps.length === 0 && model.originalTemplate.length === 0}
         >
           Reset
         </button>
