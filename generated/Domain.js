@@ -1493,10 +1493,21 @@ let TalkTimer = (function() {
         }
       }
       {
+        if (_source0.is_AdvanceTemplateAfter) {
+          let _49_idx = (_source0).idx;
+          if (((_dafny.ZERO).isLessThanOrEqualTo(_49_idx)) && ((_49_idx).isLessThan(new BigNumber(((m).dtor_originalTemplate).length)))) {
+            let _50_newTemplate = ((m).dtor_originalTemplate).slice((_49_idx).plus(_dafny.ONE));
+            return TalkTimer.Model.create_Model((m).dtor_currentTime, (m).dtor_lastLapTime, (m).dtor_laps, _50_newTemplate, (m).dtor_originalTemplate, new BigNumber(-1));
+          } else {
+            return m;
+          }
+        }
+      }
+      {
         if (_source0.is_ImportLaps) {
-          let _49_laps = (_source0).laps;
-          let _50_validLaps = TalkTimer.__default.ClampLaps(_49_laps);
-          return TalkTimer.Model.create_Model((m).dtor_currentTime, (m).dtor_lastLapTime, _dafny.Seq.Concat((m).dtor_laps, _50_validLaps), (m).dtor_template, (m).dtor_originalTemplate, (m).dtor_activeSection);
+          let _51_laps = (_source0).laps;
+          let _52_validLaps = TalkTimer.__default.ClampLaps(_51_laps);
+          return TalkTimer.Model.create_Model((m).dtor_currentTime, (m).dtor_lastLapTime, _dafny.Seq.Concat((m).dtor_laps, _52_validLaps), (m).dtor_template, (m).dtor_originalTemplate, (m).dtor_activeSection);
         }
       }
       {
@@ -1973,13 +1984,18 @@ let TalkTimer = (function() {
       let $dt = new Action(13);
       return $dt;
     }
-    static create_ImportLaps(laps) {
+    static create_AdvanceTemplateAfter(idx) {
       let $dt = new Action(14);
+      $dt.idx = idx;
+      return $dt;
+    }
+    static create_ImportLaps(laps) {
+      let $dt = new Action(15);
       $dt.laps = laps;
       return $dt;
     }
     static create_Reset() {
-      let $dt = new Action(15);
+      let $dt = new Action(16);
       return $dt;
     }
     get is_SetTime() { return this.$tag === 0; }
@@ -1996,8 +2012,9 @@ let TalkTimer = (function() {
     get is_ConsumeTemplate() { return this.$tag === 11; }
     get is_SetActiveSection() { return this.$tag === 12; }
     get is_ApplyActiveSection() { return this.$tag === 13; }
-    get is_ImportLaps() { return this.$tag === 14; }
-    get is_Reset() { return this.$tag === 15; }
+    get is_AdvanceTemplateAfter() { return this.$tag === 14; }
+    get is_ImportLaps() { return this.$tag === 15; }
+    get is_Reset() { return this.$tag === 16; }
     get dtor_ms() { return this.ms; }
     get dtor_idx() { return this.idx; }
     get dtor_name() { return this.name; }
@@ -2035,8 +2052,10 @@ let TalkTimer = (function() {
       } else if (this.$tag === 13) {
         return "TalkTimer.Action.ApplyActiveSection";
       } else if (this.$tag === 14) {
-        return "TalkTimer.Action.ImportLaps" + "(" + _dafny.toString(this.laps) + ")";
+        return "TalkTimer.Action.AdvanceTemplateAfter" + "(" + _dafny.toString(this.idx) + ")";
       } else if (this.$tag === 15) {
+        return "TalkTimer.Action.ImportLaps" + "(" + _dafny.toString(this.laps) + ")";
+      } else if (this.$tag === 16) {
         return "TalkTimer.Action.Reset";
       } else  {
         return "<unexpected>";
@@ -2074,9 +2093,11 @@ let TalkTimer = (function() {
       } else if (this.$tag === 13) {
         return other.$tag === 13;
       } else if (this.$tag === 14) {
-        return other.$tag === 14 && _dafny.areEqual(this.laps, other.laps);
+        return other.$tag === 14 && _dafny.areEqual(this.idx, other.idx);
       } else if (this.$tag === 15) {
-        return other.$tag === 15;
+        return other.$tag === 15 && _dafny.areEqual(this.laps, other.laps);
+      } else if (this.$tag === 16) {
+        return other.$tag === 16;
       } else  {
         return false; // unexpected
       }

@@ -44,6 +44,7 @@ module TalkTimer refines Domain {
     | ConsumeTemplate                       // label last lap from template, select it
     | SetActiveSection(idx: int)            // set active section for jump-to practice (-1 to clear)
     | ApplyActiveSection                    // label last lap from active section (doesn't consume queue)
+    | AdvanceTemplateAfter(idx: int)        // advance template queue to after idx in originalTemplate
     | ImportLaps(laps: seq<Lap>)            // import multiple laps at once
     | Reset                                 // restore original template as laps, or clear all if not in practice mode
 
@@ -289,6 +290,15 @@ module TalkTimer refines Domain {
           var expectedDur := if entry.expectedDuration >= 0 then entry.expectedDuration else -1;
           var newLaps := m.laps[lapIdx := m.laps[lapIdx].(section := entry.section, selected := true, expectedDuration := expectedDur, tags := entry.tags)];
           Model(m.currentTime, m.lastLapTime, newLaps, m.template, m.originalTemplate, m.activeSection)
+        else
+          m
+
+      case AdvanceTemplateAfter(idx) =>
+        // Advance template queue to start after idx in originalTemplate
+        // This allows continuing sequentially after a jump
+        if idx >= 0 && idx < |m.originalTemplate| then
+          var newTemplate := m.originalTemplate[idx + 1..];
+          Model(m.currentTime, m.lastLapTime, m.laps, newTemplate, m.originalTemplate, -1)
         else
           m
 

@@ -134,6 +134,9 @@ function App() {
   const durationInputRef = useRef<HTMLInputElement>(null)
   const tagInputRef = useRef<HTMLInputElement>(null)
 
+  // Repeat mode: when true, active section stays after creating a lap
+  const [repeatMode, setRepeatMode] = useState(false)
+
 
   // Convert Dafny history to JSON for rendering
   const history = Api.historyToJson(dafnyHistory)
@@ -190,6 +193,7 @@ function App() {
     setRunning(false)
     setStartTime(null)
     setDisplayTime(0)
+    setRepeatMode(false)
     dispatch({ type: 'Reset' })
   }
 
@@ -202,6 +206,7 @@ function App() {
     setRunning(false)
     setStartTime(null)
     setDisplayTime(0)
+    setRepeatMode(false)
     // Set template then reset (template survives reset? No - reset clears it)
     // We need to set template AFTER reset, so do it in one setDafnyHistory call
     setDafnyHistory((h: DafnyHistory) => {
@@ -214,6 +219,9 @@ function App() {
 
   // Create lap at current time
   const createLap = () => {
+    const wasActiveSection = model.activeSection
+    const wasRepeatMode = repeatMode
+
     setDafnyHistory((h: DafnyHistory) => {
       const setTimeAction = Api.actionFromJson({ type: 'SetTime', ms: displayTime })
       const createLapAction = Api.actionFromJson({ type: 'CreateLap' })
@@ -222,10 +230,17 @@ function App() {
       const h2 = Api.Do(h1, createLapAction)
 
       // In practice mode: if activeSection is set, use it; otherwise consume from queue
-      if (model.activeSection >= 0) {
+      if (wasActiveSection >= 0) {
         const applyAction = Api.actionFromJson({ type: 'ApplyActiveSection' })
-        return Api.Do(h2, applyAction)
-      } else if (model.template.length > 0) {
+        const h3 = Api.Do(h2, applyAction)
+
+        // If not in repeat mode, continue sequentially from after the jumped section
+        if (!wasRepeatMode) {
+          const advanceAction = Api.actionFromJson({ type: 'AdvanceTemplateAfter', idx: wasActiveSection })
+          return Api.Do(h3, advanceAction)
+        }
+        return h3
+      } else if (Api.historyToJson(h).present.template.length > 0) {
         const consumeAction = Api.actionFromJson({ type: 'ConsumeTemplate' })
         return Api.Do(h2, consumeAction)
       }
@@ -234,9 +249,16 @@ function App() {
     })
   }
 
-  // Set active section for jump-to practice
-  const setActiveSection = (idx: number) => {
-    dispatch({ type: 'SetActiveSection', idx })
+  // Handle section click: click to jump, click again to toggle repeat mode
+  const handleSectionClick = (idx: number) => {
+    if (model.activeSection === idx) {
+      // Clicking the same section toggles repeat mode
+      setRepeatMode(!repeatMode)
+    } else {
+      // Clicking a different section: activate it, reset repeat mode
+      dispatch({ type: 'SetActiveSection', idx })
+      setRepeatMode(false)
+    }
   }
 
   // Label a lap
@@ -420,21 +442,16 @@ function App() {
       {model.originalTemplate.length > 0 && (
         <div className="section-picker">
           <div className="picker-header">
-            <span className="picker-label">Practice Section:</span>
-            <button
-              className={`section-item ${model.activeSection === -1 ? 'active' : ''}`}
-              onClick={() => setActiveSection(-1)}
-            >
-              Sequential
-            </button>
+            <span className="picker-label">Jump to Section:</span>
           </div>
           <div className="section-list">
             {model.originalTemplate.map((entry, idx) => (
               <button
                 key={idx}
-                className={`section-item ${model.activeSection === idx ? 'active' : ''}`}
-                onClick={() => setActiveSection(idx)}
+                className={`section-item ${model.activeSection === idx ? 'active' : ''} ${model.activeSection === idx && repeatMode ? 'repeat' : ''}`}
+                onClick={() => handleSectionClick(idx)}
               >
+                {model.activeSection === idx && repeatMode && <span className="repeat-icon">↻</span>}
                 <span className="section-name">{entry.section}</span>
                 <span className="section-expected">({formatTime(entry.expectedDuration)})</span>
               </button>
@@ -453,7 +470,9 @@ function App() {
           )}
           {model.activeSection >= 0 && (
             <div className="active-indicator">
-              Practicing: {model.originalTemplate[model.activeSection].section}
+              {repeatMode ? '↻ Repeating: ' : 'Next: '}
+              {model.originalTemplate[model.activeSection].section}
+              {!repeatMode && <span className="click-hint"> (click again to repeat)</span>}
             </div>
           )}
         </div>
