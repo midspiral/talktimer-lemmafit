@@ -137,6 +137,10 @@ function App() {
   // Repeat mode: when true, active section stays after creating a lap
   const [repeatMode, setRepeatMode] = useState(false)
 
+  // Ref to always have current displayTime in callbacks
+  const displayTimeRef = useRef(displayTime)
+  displayTimeRef.current = displayTime
+
 
   // Convert Dafny history to JSON for rendering
   const history = Api.historyToJson(dafnyHistory)
@@ -221,9 +225,10 @@ function App() {
   const createLap = () => {
     const wasActiveSection = model.activeSection
     const wasRepeatMode = repeatMode
+    const currentTime = displayTimeRef.current
 
     setDafnyHistory((h: DafnyHistory) => {
-      const setTimeAction = Api.actionFromJson({ type: 'SetTime', ms: displayTime })
+      const setTimeAction = Api.actionFromJson({ type: 'SetTime', ms: currentTime })
       const createLapAction = Api.actionFromJson({ type: 'CreateLap' })
 
       const h1 = Api.Do(h, setTimeAction)
