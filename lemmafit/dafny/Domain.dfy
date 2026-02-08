@@ -24,7 +24,8 @@ module TalkTimer refines Domain {
     lastLapTime: int,   // timestamp of previous lap (for computing next duration)
     laps: seq<Lap>,     // recorded lap markers
     template: seq<TemplateEntry>,  // practice mode template queue (remaining)
-    originalTemplate: seq<TemplateEntry>  // original template for reset
+    originalTemplate: seq<TemplateEntry>,  // original template for reset
+    activeSection: int  // -1 = no active section (use sequential), >= 0 = index into originalTemplate
   )
 
   // User actions
@@ -41,6 +42,8 @@ module TalkTimer refines Domain {
     | RemoveTag(idx: int, tag: string)      // remove tag from lap (if present)
     | SetTemplate(labels: seq<TemplateEntry>)  // set practice template queue
     | ConsumeTemplate                       // label last lap from template, select it
+    | SetActiveSection(idx: int)            // set active section for jump-to practice (-1 to clear)
+    | ApplyActiveSection                    // label last lap from active section (doesn't consume queue)
     | ImportLaps(laps: seq<Lap>)            // import multiple laps at once
     | Reset                                 // restore original template as laps, or clear all if not in practice mode
 
@@ -164,7 +167,9 @@ module TalkTimer refines Domain {
     m.currentTime >= 0 &&
     m.lastLapTime >= 0 &&
     m.lastLapTime <= m.currentTime &&
-    LapsValid(m.laps)
+    LapsValid(m.laps) &&
+    m.activeSection >= -1 &&
+    (m.activeSection >= 0 ==> m.activeSection < |m.originalTemplate|)
   }
 
   //----------------------------------------------------------------------
@@ -174,7 +179,7 @@ module TalkTimer refines Domain {
   function Init(): Model
     ensures Inv(Init())
   {
-    Model(0, 0, [], [], [])
+    Model(0, 0, [], [], [], -1)
   }
 
   function Apply(m: Model, a: Action): Model
@@ -182,32 +187,32 @@ module TalkTimer refines Domain {
     match a
       case SetTime(ms) =>
         // Only allow time to advance forward
-        if ms >= m.currentTime then Model(ms, m.lastLapTime, m.laps, m.template, m.originalTemplate) else m
+        if ms >= m.currentTime then Model(ms, m.lastLapTime, m.laps, m.template, m.originalTemplate, m.activeSection) else m
 
       case CreateLap =>
         // Record lap with duration from last lap time
         var duration := m.currentTime - m.lastLapTime;
         var newLap := Lap(m.currentTime, duration, "", false, -1, []);
-        Model(m.currentTime, m.currentTime, m.laps + [newLap], m.template, m.originalTemplate)
+        Model(m.currentTime, m.currentTime, m.laps + [newLap], m.template, m.originalTemplate, m.activeSection)
 
       case LabelLap(idx, name) =>
         if 0 <= idx < |m.laps| then
           Model(m.currentTime, m.lastLapTime,
-                m.laps[idx := m.laps[idx].(section := name)], m.template, m.originalTemplate)
+                m.laps[idx := m.laps[idx].(section := name)], m.template, m.originalTemplate, m.activeSection)
         else
           m
 
       case SelectLap(idx) =>
         if 0 <= idx < |m.laps| then
           Model(m.currentTime, m.lastLapTime,
-                m.laps[idx := m.laps[idx].(selected := !m.laps[idx].selected)], m.template, m.originalTemplate)
+                m.laps[idx := m.laps[idx].(selected := !m.laps[idx].selected)], m.template, m.originalTemplate, m.activeSection)
         else
           m
 
       case DeleteLap(idx) =>
         // Delete lap - other laps keep their stored durations
         if 0 <= idx < |m.laps| then
-          Model(m.currentTime, m.lastLapTime, m.laps[..idx] + m.laps[idx+1..], m.template, m.originalTemplate)
+          Model(m.currentTime, m.lastLapTime, m.laps[..idx] + m.laps[idx+1..], m.template, m.originalTemplate, m.activeSection)
         else
           m
 
@@ -215,7 +220,7 @@ module TalkTimer refines Domain {
         // Manually set duration (must be non-negative)
         if 0 <= idx < |m.laps| && duration >= 0 then
           Model(m.currentTime, m.lastLapTime,
-                m.laps[idx := m.laps[idx].(duration := duration)], m.template, m.originalTemplate)
+                m.laps[idx := m.laps[idx].(duration := duration)], m.template, m.originalTemplate, m.activeSection)
         else
           m
 
@@ -223,7 +228,7 @@ module TalkTimer refines Domain {
         // Swap lap with the one above it
         if 1 <= idx < |m.laps| then
           var newLaps := m.laps[idx-1 := m.laps[idx]][idx := m.laps[idx-1]];
-          Model(m.currentTime, m.lastLapTime, newLaps, m.template, m.originalTemplate)
+          Model(m.currentTime, m.lastLapTime, newLaps, m.template, m.originalTemplate, m.activeSection)
         else
           m
 
@@ -231,7 +236,7 @@ module TalkTimer refines Domain {
         // Swap lap with the one below it
         if 0 <= idx < |m.laps| - 1 then
           var newLaps := m.laps[idx := m.laps[idx+1]][idx+1 := m.laps[idx]];
-          Model(m.currentTime, m.lastLapTime, newLaps, m.template, m.originalTemplate)
+          Model(m.currentTime, m.lastLapTime, newLaps, m.template, m.originalTemplate, m.activeSection)
         else
           m
 
@@ -240,7 +245,7 @@ module TalkTimer refines Domain {
         if 0 <= idx < |m.laps| then
           var newTags := AddTagToSeq(m.laps[idx].tags, tag);
           Model(m.currentTime, m.lastLapTime,
-                m.laps[idx := m.laps[idx].(tags := newTags)], m.template, m.originalTemplate)
+                m.laps[idx := m.laps[idx].(tags := newTags)], m.template, m.originalTemplate, m.activeSection)
         else
           m
 
@@ -249,13 +254,14 @@ module TalkTimer refines Domain {
         if 0 <= idx < |m.laps| then
           var newTags := RemoveTagFromSeq(m.laps[idx].tags, tag);
           Model(m.currentTime, m.lastLapTime,
-                m.laps[idx := m.laps[idx].(tags := newTags)], m.template, m.originalTemplate)
+                m.laps[idx := m.laps[idx].(tags := newTags)], m.template, m.originalTemplate, m.activeSection)
         else
           m
 
       case SetTemplate(labels) =>
         // Set the practice template queue and store original for reset
-        Model(m.currentTime, m.lastLapTime, m.laps, labels, labels)
+        // Reset activeSection to -1 (start in sequential mode)
+        Model(m.currentTime, m.lastLapTime, m.laps, labels, labels, -1)
 
       case ConsumeTemplate =>
         // Label last lap from template and select it, set expected duration and tags
@@ -264,7 +270,25 @@ module TalkTimer refines Domain {
           var entry := m.template[0];
           var expectedDur := if entry.expectedDuration >= 0 then entry.expectedDuration else -1;
           var newLaps := m.laps[idx := m.laps[idx].(section := entry.section, selected := true, expectedDuration := expectedDur, tags := entry.tags)];
-          Model(m.currentTime, m.lastLapTime, newLaps, m.template[1..], m.originalTemplate)
+          Model(m.currentTime, m.lastLapTime, newLaps, m.template[1..], m.originalTemplate, m.activeSection)
+        else
+          m
+
+      case SetActiveSection(idx) =>
+        // Set active section for jump-to practice (-1 to clear and resume sequential)
+        if idx >= -1 && (idx == -1 || idx < |m.originalTemplate|) then
+          Model(m.currentTime, m.lastLapTime, m.laps, m.template, m.originalTemplate, idx)
+        else
+          m
+
+      case ApplyActiveSection =>
+        // Label last lap from active section (doesn't consume queue)
+        if m.activeSection >= 0 && m.activeSection < |m.originalTemplate| && |m.laps| > 0 then
+          var lapIdx := |m.laps| - 1;
+          var entry := m.originalTemplate[m.activeSection];
+          var expectedDur := if entry.expectedDuration >= 0 then entry.expectedDuration else -1;
+          var newLaps := m.laps[lapIdx := m.laps[lapIdx].(section := entry.section, selected := true, expectedDuration := expectedDur, tags := entry.tags)];
+          Model(m.currentTime, m.lastLapTime, newLaps, m.template, m.originalTemplate, m.activeSection)
         else
           m
 
@@ -272,14 +296,15 @@ module TalkTimer refines Domain {
         // Import multiple laps at once (for paste import)
         // Clamp values to ensure validity
         var validLaps := ClampLaps(laps);
-        Model(m.currentTime, m.lastLapTime, m.laps + validLaps, m.template, m.originalTemplate)
+        Model(m.currentTime, m.lastLapTime, m.laps + validLaps, m.template, m.originalTemplate, m.activeSection)
 
       case Reset =>
         // If in practice mode, restore original template as laps; otherwise clear all
+        // Reset activeSection to -1
         if |m.originalTemplate| > 0 then
-          Model(m.currentTime, m.currentTime, TemplateToLaps(m.originalTemplate), [], [])
+          Model(m.currentTime, m.currentTime, TemplateToLaps(m.originalTemplate), [], [], -1)
         else
-          Model(m.currentTime, m.currentTime, [], [], [])
+          Model(m.currentTime, m.currentTime, [], [], [], -1)
   }
 
   function Normalize(m: Model): Model {
@@ -682,6 +707,237 @@ module TalkTimer refines Domain {
   {}
 
   //----------------------------------------------------------------------
+  // Section Aggregation Helpers
+  //----------------------------------------------------------------------
+
+  // Sum durations of selected laps with a specific section
+  function SumBySection(laps: seq<Lap>, section: string): int
+  {
+    if |laps| == 0 then 0
+    else if laps[0].selected && laps[0].section == section then
+      laps[0].duration + SumBySection(laps[1..], section)
+    else
+      SumBySection(laps[1..], section)
+  }
+
+  // Count selected laps with a specific section
+  function CountBySection(laps: seq<Lap>, section: string): int
+  {
+    if |laps| == 0 then 0
+    else if laps[0].selected && laps[0].section == section then
+      1 + CountBySection(laps[1..], section)
+    else
+      CountBySection(laps[1..], section)
+  }
+
+  // Find minimum duration among selected laps with a specific section
+  // Returns -1 if no matching laps
+  function MinBySectionHelper(laps: seq<Lap>, section: string, currentMin: int): int
+  {
+    if |laps| == 0 then currentMin
+    else if laps[0].selected && laps[0].section == section then
+      var newMin := if currentMin == -1 then laps[0].duration
+                    else if laps[0].duration < currentMin then laps[0].duration
+                    else currentMin;
+      MinBySectionHelper(laps[1..], section, newMin)
+    else
+      MinBySectionHelper(laps[1..], section, currentMin)
+  }
+
+  function MinBySection(laps: seq<Lap>, section: string): int
+  {
+    MinBySectionHelper(laps, section, -1)
+  }
+
+  // Find maximum duration among selected laps with a specific section
+  // Returns -1 if no matching laps
+  function MaxBySectionHelper(laps: seq<Lap>, section: string, currentMax: int): int
+  {
+    if |laps| == 0 then currentMax
+    else if laps[0].selected && laps[0].section == section then
+      var newMax := if laps[0].duration > currentMax then laps[0].duration
+                    else currentMax;
+      MaxBySectionHelper(laps[1..], section, newMax)
+    else
+      MaxBySectionHelper(laps[1..], section, currentMax)
+  }
+
+  function MaxBySection(laps: seq<Lap>, section: string): int
+  {
+    MaxBySectionHelper(laps, section, -1)
+  }
+
+  // Collect all unique sections from selected laps (non-empty sections only)
+  function CollectAllSectionsHelper(laps: seq<Lap>, seen: seq<string>): seq<string>
+  {
+    if |laps| == 0 then seen
+    else if laps[0].selected && laps[0].section != "" then
+      var section := laps[0].section;
+      var updatedSeen := if section in seen then seen else seen + [section];
+      CollectAllSectionsHelper(laps[1..], updatedSeen)
+    else
+      CollectAllSectionsHelper(laps[1..], seen)
+  }
+
+  function CollectAllSections(laps: seq<Lap>): seq<string>
+  {
+    CollectAllSectionsHelper(laps, [])
+  }
+
+  // [verified] SumBySection is non-negative when all durations are non-negative
+  lemma SumBySectionNonNegative(laps: seq<Lap>, section: string)
+    requires LapsValid(laps)
+    ensures SumBySection(laps, section) >= 0
+  {
+    if |laps| == 0 {
+    } else {
+      SumBySectionNonNegative(laps[1..], section);
+    }
+  }
+
+  // [verified] CountBySection is non-negative
+  lemma CountBySectionNonNegative(laps: seq<Lap>, section: string)
+    ensures CountBySection(laps, section) >= 0
+  {
+    if |laps| == 0 {
+    } else {
+      CountBySectionNonNegative(laps[1..], section);
+    }
+  }
+
+  // [verified] SumBySection only counts selected laps
+  lemma SumBySectionOnlySelected(laps: seq<Lap>, section: string)
+    requires |laps| > 0
+    requires !laps[0].selected
+    ensures SumBySection(laps, section) == SumBySection(laps[1..], section)
+  {}
+
+  // [verified] SumBySection only counts laps with the section
+  lemma SumBySectionOnlyMatching(laps: seq<Lap>, section: string)
+    requires |laps| > 0
+    requires laps[0].selected
+    requires laps[0].section != section
+    ensures SumBySection(laps, section) == SumBySection(laps[1..], section)
+  {}
+
+  // Helper lemma for MinBySectionHelper
+  lemma MinBySectionHelperValid(laps: seq<Lap>, section: string, currentMin: int)
+    requires LapsValid(laps)
+    requires currentMin >= -1
+    ensures MinBySectionHelper(laps, section, currentMin) >= -1
+  {
+    if |laps| == 0 {
+    } else if laps[0].selected && laps[0].section == section {
+      var newMin := if currentMin == -1 then laps[0].duration
+                    else if laps[0].duration < currentMin then laps[0].duration
+                    else currentMin;
+      MinBySectionHelperValid(laps[1..], section, newMin);
+    } else {
+      MinBySectionHelperValid(laps[1..], section, currentMin);
+    }
+  }
+
+  // [verified] MinBySection returns -1 or a valid duration
+  lemma MinBySectionValid(laps: seq<Lap>, section: string)
+    requires LapsValid(laps)
+    ensures MinBySection(laps, section) >= -1
+  {
+    MinBySectionHelperValid(laps, section, -1);
+  }
+
+  // Helper lemma for MaxBySectionHelper
+  lemma MaxBySectionHelperValid(laps: seq<Lap>, section: string, currentMax: int)
+    requires LapsValid(laps)
+    requires currentMax >= -1
+    ensures MaxBySectionHelper(laps, section, currentMax) >= -1
+  {
+    if |laps| == 0 {
+    } else if laps[0].selected && laps[0].section == section {
+      var newMax := if laps[0].duration > currentMax then laps[0].duration
+                    else currentMax;
+      MaxBySectionHelperValid(laps[1..], section, newMax);
+    } else {
+      MaxBySectionHelperValid(laps[1..], section, currentMax);
+    }
+  }
+
+  // [verified] MaxBySection returns -1 or a valid duration
+  lemma MaxBySectionValid(laps: seq<Lap>, section: string)
+    requires LapsValid(laps)
+    ensures MaxBySection(laps, section) >= -1
+  {
+    MaxBySectionHelperValid(laps, section, -1);
+  }
+
+  //----------------------------------------------------------------------
+  // Active Section Lemmas
+  //----------------------------------------------------------------------
+
+  // [verified] SetActiveSection updates model state to selected index
+  lemma SetActiveSectionUpdatesState(m: Model, idx: int)
+    requires Inv(m)
+    requires idx >= -1 && (idx == -1 || idx < |m.originalTemplate|)
+    ensures Apply(m, SetActiveSection(idx)).activeSection == idx
+  {}
+
+  // [verified] ApplyActiveSection labels last lap from active section entry
+  lemma ApplyActiveSectionSetsLabel(m: Model)
+    requires Inv(m)
+    requires m.activeSection >= 0 && m.activeSection < |m.originalTemplate|
+    requires |m.laps| > 0
+    ensures Apply(m, ApplyActiveSection).laps[|m.laps|-1].section == m.originalTemplate[m.activeSection].section
+  {}
+
+  // [verified] ApplyActiveSection sets the lap to selected
+  lemma ApplyActiveSectionSelectsLap(m: Model)
+    requires Inv(m)
+    requires m.activeSection >= 0 && m.activeSection < |m.originalTemplate|
+    requires |m.laps| > 0
+    ensures Apply(m, ApplyActiveSection).laps[|m.laps|-1].selected == true
+  {}
+
+  // [verified] ApplyActiveSection sets expected duration from template
+  lemma ApplyActiveSectionSetsExpected(m: Model)
+    requires Inv(m)
+    requires m.activeSection >= 0 && m.activeSection < |m.originalTemplate|
+    requires |m.laps| > 0
+    requires m.originalTemplate[m.activeSection].expectedDuration >= 0
+    ensures Apply(m, ApplyActiveSection).laps[|m.laps|-1].expectedDuration == m.originalTemplate[m.activeSection].expectedDuration
+  {}
+
+  // [verified] ApplyActiveSection sets tags from template
+  lemma ApplyActiveSectionSetsTags(m: Model)
+    requires Inv(m)
+    requires m.activeSection >= 0 && m.activeSection < |m.originalTemplate|
+    requires |m.laps| > 0
+    ensures Apply(m, ApplyActiveSection).laps[|m.laps|-1].tags == m.originalTemplate[m.activeSection].tags
+  {}
+
+  // [verified] ApplyActiveSection preserves original lap duration
+  lemma ApplyActiveSectionPreservesDuration(m: Model)
+    requires Inv(m)
+    requires m.activeSection >= 0 && m.activeSection < |m.originalTemplate|
+    requires |m.laps| > 0
+    ensures Apply(m, ApplyActiveSection).laps[|m.laps|-1].duration == m.laps[|m.laps|-1].duration
+  {}
+
+  // [verified] ApplyActiveSection preserves original lap timestamp
+  lemma ApplyActiveSectionPreservesTimestamp(m: Model)
+    requires Inv(m)
+    requires m.activeSection >= 0 && m.activeSection < |m.originalTemplate|
+    requires |m.laps| > 0
+    ensures Apply(m, ApplyActiveSection).laps[|m.laps|-1].timestamp == m.laps[|m.laps|-1].timestamp
+  {}
+
+  // [verified] ApplyActiveSection does not consume template queue
+  lemma ApplyActiveSectionPreservesQueue(m: Model)
+    requires Inv(m)
+    requires m.activeSection >= 0 && m.activeSection < |m.originalTemplate|
+    requires |m.laps| > 0
+    ensures |Apply(m, ApplyActiveSection).template| == |m.template|
+  {}
+
+  //----------------------------------------------------------------------
   // Practice Round-Trip Lemmas
   //----------------------------------------------------------------------
 
@@ -801,5 +1057,26 @@ module AppCore refines Kernel {
 
   function CollectAllTags(laps: seq<D.Lap>): seq<string> {
     D.CollectAllTags(laps)
+  }
+
+  // Section aggregation functions
+  function SumBySection(laps: seq<D.Lap>, section: string): int {
+    D.SumBySection(laps, section)
+  }
+
+  function CountBySection(laps: seq<D.Lap>, section: string): int {
+    D.CountBySection(laps, section)
+  }
+
+  function MinBySection(laps: seq<D.Lap>, section: string): int {
+    D.MinBySection(laps, section)
+  }
+
+  function MaxBySection(laps: seq<D.Lap>, section: string): int {
+    D.MaxBySection(laps, section)
+  }
+
+  function CollectAllSections(laps: seq<D.Lap>): seq<string> {
+    D.CollectAllSections(laps)
   }
 }

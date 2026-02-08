@@ -1260,7 +1260,7 @@ let TalkTimer = (function() {
       }
     };
     static Init() {
-      return TalkTimer.Model.create_Model(_dafny.ZERO, _dafny.ZERO, _dafny.Seq.of(), _dafny.Seq.of(), _dafny.Seq.of());
+      return TalkTimer.Model.create_Model(_dafny.ZERO, _dafny.ZERO, _dafny.Seq.of(), _dafny.Seq.of(), _dafny.Seq.of(), new BigNumber(-1));
     };
     static Apply(m, a) {
       let _pat_let_tv0 = m;
@@ -1269,7 +1269,7 @@ let TalkTimer = (function() {
         if (_source0.is_SetTime) {
           let _0_ms = (_source0).ms;
           if (((m).dtor_currentTime).isLessThanOrEqualTo(_0_ms)) {
-            return TalkTimer.Model.create_Model(_0_ms, (m).dtor_lastLapTime, (m).dtor_laps, (m).dtor_template, (m).dtor_originalTemplate);
+            return TalkTimer.Model.create_Model(_0_ms, (m).dtor_lastLapTime, (m).dtor_laps, (m).dtor_template, (m).dtor_originalTemplate, (m).dtor_activeSection);
           } else {
             return m;
           }
@@ -1279,7 +1279,7 @@ let TalkTimer = (function() {
         if (_source0.is_CreateLap) {
           let _1_duration = ((m).dtor_currentTime).minus((m).dtor_lastLapTime);
           let _2_newLap = TalkTimer.Lap.create_Lap((m).dtor_currentTime, _1_duration, _dafny.Seq.UnicodeFromString(""), false, new BigNumber(-1), _dafny.Seq.of());
-          return TalkTimer.Model.create_Model((m).dtor_currentTime, (m).dtor_currentTime, _dafny.Seq.Concat((m).dtor_laps, _dafny.Seq.of(_2_newLap)), (m).dtor_template, (m).dtor_originalTemplate);
+          return TalkTimer.Model.create_Model((m).dtor_currentTime, (m).dtor_currentTime, _dafny.Seq.Concat((m).dtor_laps, _dafny.Seq.of(_2_newLap)), (m).dtor_template, (m).dtor_originalTemplate, (m).dtor_activeSection);
         }
       }
       {
@@ -1295,7 +1295,7 @@ let TalkTimer = (function() {
       }(_pat_let1_0);
     }(_4_name);
   }(_pat_let0_0);
-}(((m).dtor_laps)[_3_idx])), (m).dtor_template, (m).dtor_originalTemplate);
+}(((m).dtor_laps)[_3_idx])), (m).dtor_template, (m).dtor_originalTemplate, (m).dtor_activeSection);
           } else {
             return m;
           }
@@ -1313,7 +1313,7 @@ let TalkTimer = (function() {
       }(_pat_let3_0);
     }(!((((_pat_let_tv0).dtor_laps)[_7_idx]).dtor_selected));
   }(_pat_let2_0);
-}(((m).dtor_laps)[_7_idx])), (m).dtor_template, (m).dtor_originalTemplate);
+}(((m).dtor_laps)[_7_idx])), (m).dtor_template, (m).dtor_originalTemplate, (m).dtor_activeSection);
           } else {
             return m;
           }
@@ -1323,7 +1323,7 @@ let TalkTimer = (function() {
         if (_source0.is_DeleteLap) {
           let _10_idx = (_source0).idx;
           if (((_dafny.ZERO).isLessThanOrEqualTo(_10_idx)) && ((_10_idx).isLessThan(new BigNumber(((m).dtor_laps).length)))) {
-            return TalkTimer.Model.create_Model((m).dtor_currentTime, (m).dtor_lastLapTime, _dafny.Seq.Concat(((m).dtor_laps).slice(0, _10_idx), ((m).dtor_laps).slice((_10_idx).plus(_dafny.ONE))), (m).dtor_template, (m).dtor_originalTemplate);
+            return TalkTimer.Model.create_Model((m).dtor_currentTime, (m).dtor_lastLapTime, _dafny.Seq.Concat(((m).dtor_laps).slice(0, _10_idx), ((m).dtor_laps).slice((_10_idx).plus(_dafny.ONE))), (m).dtor_template, (m).dtor_originalTemplate, (m).dtor_activeSection);
           } else {
             return m;
           }
@@ -1342,7 +1342,7 @@ let TalkTimer = (function() {
       }(_pat_let5_0);
     }(_12_duration);
   }(_pat_let4_0);
-}(((m).dtor_laps)[_11_idx])), (m).dtor_template, (m).dtor_originalTemplate);
+}(((m).dtor_laps)[_11_idx])), (m).dtor_template, (m).dtor_originalTemplate, (m).dtor_activeSection);
           } else {
             return m;
           }
@@ -1353,7 +1353,7 @@ let TalkTimer = (function() {
           let _15_idx = (_source0).idx;
           if (((_dafny.ONE).isLessThanOrEqualTo(_15_idx)) && ((_15_idx).isLessThan(new BigNumber(((m).dtor_laps).length)))) {
             let _16_newLaps = _dafny.Seq.update(_dafny.Seq.update((m).dtor_laps, (_15_idx).minus(_dafny.ONE), ((m).dtor_laps)[_15_idx]), _15_idx, ((m).dtor_laps)[(_15_idx).minus(_dafny.ONE)]);
-            return TalkTimer.Model.create_Model((m).dtor_currentTime, (m).dtor_lastLapTime, _16_newLaps, (m).dtor_template, (m).dtor_originalTemplate);
+            return TalkTimer.Model.create_Model((m).dtor_currentTime, (m).dtor_lastLapTime, _16_newLaps, (m).dtor_template, (m).dtor_originalTemplate, (m).dtor_activeSection);
           } else {
             return m;
           }
@@ -1364,7 +1364,7 @@ let TalkTimer = (function() {
           let _17_idx = (_source0).idx;
           if (((_dafny.ZERO).isLessThanOrEqualTo(_17_idx)) && ((_17_idx).isLessThan((new BigNumber(((m).dtor_laps).length)).minus(_dafny.ONE)))) {
             let _18_newLaps = _dafny.Seq.update(_dafny.Seq.update((m).dtor_laps, _17_idx, ((m).dtor_laps)[(_17_idx).plus(_dafny.ONE)]), (_17_idx).plus(_dafny.ONE), ((m).dtor_laps)[_17_idx]);
-            return TalkTimer.Model.create_Model((m).dtor_currentTime, (m).dtor_lastLapTime, _18_newLaps, (m).dtor_template, (m).dtor_originalTemplate);
+            return TalkTimer.Model.create_Model((m).dtor_currentTime, (m).dtor_lastLapTime, _18_newLaps, (m).dtor_template, (m).dtor_originalTemplate, (m).dtor_activeSection);
           } else {
             return m;
           }
@@ -1384,7 +1384,7 @@ let TalkTimer = (function() {
       }(_pat_let7_0);
     }(_21_newTags);
   }(_pat_let6_0);
-}(((m).dtor_laps)[_19_idx])), (m).dtor_template, (m).dtor_originalTemplate);
+}(((m).dtor_laps)[_19_idx])), (m).dtor_template, (m).dtor_originalTemplate, (m).dtor_activeSection);
           } else {
             return m;
           }
@@ -1404,7 +1404,7 @@ let TalkTimer = (function() {
       }(_pat_let9_0);
     }(_26_newTags);
   }(_pat_let8_0);
-}(((m).dtor_laps)[_24_idx])), (m).dtor_template, (m).dtor_originalTemplate);
+}(((m).dtor_laps)[_24_idx])), (m).dtor_template, (m).dtor_originalTemplate, (m).dtor_activeSection);
           } else {
             return m;
           }
@@ -1413,7 +1413,7 @@ let TalkTimer = (function() {
       {
         if (_source0.is_SetTemplate) {
           let _29_labels = (_source0).labels;
-          return TalkTimer.Model.create_Model((m).dtor_currentTime, (m).dtor_lastLapTime, (m).dtor_laps, _29_labels, _29_labels);
+          return TalkTimer.Model.create_Model((m).dtor_currentTime, (m).dtor_lastLapTime, (m).dtor_laps, _29_labels, _29_labels, new BigNumber(-1));
         }
       }
       {
@@ -1443,7 +1443,50 @@ let TalkTimer = (function() {
                 }((_31_entry).dtor_tags);
               }(_pat_let10_0);
             }(((m).dtor_laps)[_30_idx]));
-            return TalkTimer.Model.create_Model((m).dtor_currentTime, (m).dtor_lastLapTime, _33_newLaps, ((m).dtor_template).slice(_dafny.ONE), (m).dtor_originalTemplate);
+            return TalkTimer.Model.create_Model((m).dtor_currentTime, (m).dtor_lastLapTime, _33_newLaps, ((m).dtor_template).slice(_dafny.ONE), (m).dtor_originalTemplate, (m).dtor_activeSection);
+          } else {
+            return m;
+          }
+        }
+      }
+      {
+        if (_source0.is_SetActiveSection) {
+          let _39_idx = (_source0).idx;
+          if (((new BigNumber(-1)).isLessThanOrEqualTo(_39_idx)) && (((_39_idx).isEqualTo(new BigNumber(-1))) || ((_39_idx).isLessThan(new BigNumber(((m).dtor_originalTemplate).length))))) {
+            return TalkTimer.Model.create_Model((m).dtor_currentTime, (m).dtor_lastLapTime, (m).dtor_laps, (m).dtor_template, (m).dtor_originalTemplate, _39_idx);
+          } else {
+            return m;
+          }
+        }
+      }
+      {
+        if (_source0.is_ApplyActiveSection) {
+          if ((((_dafny.ZERO).isLessThanOrEqualTo((m).dtor_activeSection)) && (((m).dtor_activeSection).isLessThan(new BigNumber(((m).dtor_originalTemplate).length)))) && ((_dafny.ZERO).isLessThan(new BigNumber(((m).dtor_laps).length)))) {
+            let _40_lapIdx = (new BigNumber(((m).dtor_laps).length)).minus(_dafny.ONE);
+            let _41_entry = ((m).dtor_originalTemplate)[(m).dtor_activeSection];
+            let _42_expectedDur = (((_dafny.ZERO).isLessThanOrEqualTo((_41_entry).dtor_expectedDuration)) ? ((_41_entry).dtor_expectedDuration) : (new BigNumber(-1)));
+            let _43_newLaps = _dafny.Seq.update((m).dtor_laps, _40_lapIdx, function (_pat_let15_0) {
+              return function (_44_dt__update__tmp_h6) {
+                return function (_pat_let16_0) {
+                  return function (_45_dt__update_htags_h3) {
+                    return function (_pat_let17_0) {
+                      return function (_46_dt__update_hexpectedDuration_h1) {
+                        return function (_pat_let18_0) {
+                          return function (_47_dt__update_hselected_h2) {
+                            return function (_pat_let19_0) {
+                              return function (_48_dt__update_hsection_h2) {
+                                return TalkTimer.Lap.create_Lap((_44_dt__update__tmp_h6).dtor_timestamp, (_44_dt__update__tmp_h6).dtor_duration, _48_dt__update_hsection_h2, _47_dt__update_hselected_h2, _46_dt__update_hexpectedDuration_h1, _45_dt__update_htags_h3);
+                              }(_pat_let19_0);
+                            }((_41_entry).dtor_section);
+                          }(_pat_let18_0);
+                        }(true);
+                      }(_pat_let17_0);
+                    }(_42_expectedDur);
+                  }(_pat_let16_0);
+                }((_41_entry).dtor_tags);
+              }(_pat_let15_0);
+            }(((m).dtor_laps)[_40_lapIdx]));
+            return TalkTimer.Model.create_Model((m).dtor_currentTime, (m).dtor_lastLapTime, _43_newLaps, (m).dtor_template, (m).dtor_originalTemplate, (m).dtor_activeSection);
           } else {
             return m;
           }
@@ -1451,16 +1494,16 @@ let TalkTimer = (function() {
       }
       {
         if (_source0.is_ImportLaps) {
-          let _39_laps = (_source0).laps;
-          let _40_validLaps = TalkTimer.__default.ClampLaps(_39_laps);
-          return TalkTimer.Model.create_Model((m).dtor_currentTime, (m).dtor_lastLapTime, _dafny.Seq.Concat((m).dtor_laps, _40_validLaps), (m).dtor_template, (m).dtor_originalTemplate);
+          let _49_laps = (_source0).laps;
+          let _50_validLaps = TalkTimer.__default.ClampLaps(_49_laps);
+          return TalkTimer.Model.create_Model((m).dtor_currentTime, (m).dtor_lastLapTime, _dafny.Seq.Concat((m).dtor_laps, _50_validLaps), (m).dtor_template, (m).dtor_originalTemplate, (m).dtor_activeSection);
         }
       }
       {
         if ((_dafny.ZERO).isLessThan(new BigNumber(((m).dtor_originalTemplate).length))) {
-          return TalkTimer.Model.create_Model((m).dtor_currentTime, (m).dtor_currentTime, TalkTimer.__default.TemplateToLaps((m).dtor_originalTemplate), _dafny.Seq.of(), _dafny.Seq.of());
+          return TalkTimer.Model.create_Model((m).dtor_currentTime, (m).dtor_currentTime, TalkTimer.__default.TemplateToLaps((m).dtor_originalTemplate), _dafny.Seq.of(), _dafny.Seq.of(), new BigNumber(-1));
         } else {
-          return TalkTimer.Model.create_Model((m).dtor_currentTime, (m).dtor_currentTime, _dafny.Seq.of(), _dafny.Seq.of(), _dafny.Seq.of());
+          return TalkTimer.Model.create_Model((m).dtor_currentTime, (m).dtor_currentTime, _dafny.Seq.of(), _dafny.Seq.of(), _dafny.Seq.of(), new BigNumber(-1));
         }
       }
     };
@@ -1592,6 +1635,126 @@ let TalkTimer = (function() {
     static CollectAllTags(laps) {
       return TalkTimer.__default.CollectAllTagsHelper(laps, _dafny.Seq.of());
     };
+    static SumBySection(laps, section) {
+      let _0___accumulator = _dafny.ZERO;
+      TAIL_CALL_START: while (true) {
+        if ((new BigNumber((laps).length)).isEqualTo(_dafny.ZERO)) {
+          return (_dafny.ZERO).plus(_0___accumulator);
+        } else if ((((laps)[_dafny.ZERO]).dtor_selected) && (_dafny.areEqual(((laps)[_dafny.ZERO]).dtor_section, section))) {
+          _0___accumulator = (_0___accumulator).plus(((laps)[_dafny.ZERO]).dtor_duration);
+          let _in0 = (laps).slice(_dafny.ONE);
+          let _in1 = section;
+          laps = _in0;
+          section = _in1;
+          continue TAIL_CALL_START;
+        } else {
+          let _in2 = (laps).slice(_dafny.ONE);
+          let _in3 = section;
+          laps = _in2;
+          section = _in3;
+          continue TAIL_CALL_START;
+        }
+      }
+    };
+    static CountBySection(laps, section) {
+      let _0___accumulator = _dafny.ZERO;
+      TAIL_CALL_START: while (true) {
+        if ((new BigNumber((laps).length)).isEqualTo(_dafny.ZERO)) {
+          return (_dafny.ZERO).plus(_0___accumulator);
+        } else if ((((laps)[_dafny.ZERO]).dtor_selected) && (_dafny.areEqual(((laps)[_dafny.ZERO]).dtor_section, section))) {
+          _0___accumulator = (_0___accumulator).plus(_dafny.ONE);
+          let _in0 = (laps).slice(_dafny.ONE);
+          let _in1 = section;
+          laps = _in0;
+          section = _in1;
+          continue TAIL_CALL_START;
+        } else {
+          let _in2 = (laps).slice(_dafny.ONE);
+          let _in3 = section;
+          laps = _in2;
+          section = _in3;
+          continue TAIL_CALL_START;
+        }
+      }
+    };
+    static MinBySectionHelper(laps, section, currentMin) {
+      TAIL_CALL_START: while (true) {
+        if ((new BigNumber((laps).length)).isEqualTo(_dafny.ZERO)) {
+          return currentMin;
+        } else if ((((laps)[_dafny.ZERO]).dtor_selected) && (_dafny.areEqual(((laps)[_dafny.ZERO]).dtor_section, section))) {
+          let _0_newMin = (((currentMin).isEqualTo(new BigNumber(-1))) ? (((laps)[_dafny.ZERO]).dtor_duration) : ((((((laps)[_dafny.ZERO]).dtor_duration).isLessThan(currentMin)) ? (((laps)[_dafny.ZERO]).dtor_duration) : (currentMin))));
+          let _in0 = (laps).slice(_dafny.ONE);
+          let _in1 = section;
+          let _in2 = _0_newMin;
+          laps = _in0;
+          section = _in1;
+          currentMin = _in2;
+          continue TAIL_CALL_START;
+        } else {
+          let _in3 = (laps).slice(_dafny.ONE);
+          let _in4 = section;
+          let _in5 = currentMin;
+          laps = _in3;
+          section = _in4;
+          currentMin = _in5;
+          continue TAIL_CALL_START;
+        }
+      }
+    };
+    static MinBySection(laps, section) {
+      return TalkTimer.__default.MinBySectionHelper(laps, section, new BigNumber(-1));
+    };
+    static MaxBySectionHelper(laps, section, currentMax) {
+      TAIL_CALL_START: while (true) {
+        if ((new BigNumber((laps).length)).isEqualTo(_dafny.ZERO)) {
+          return currentMax;
+        } else if ((((laps)[_dafny.ZERO]).dtor_selected) && (_dafny.areEqual(((laps)[_dafny.ZERO]).dtor_section, section))) {
+          let _0_newMax = (((currentMax).isLessThan(((laps)[_dafny.ZERO]).dtor_duration)) ? (((laps)[_dafny.ZERO]).dtor_duration) : (currentMax));
+          let _in0 = (laps).slice(_dafny.ONE);
+          let _in1 = section;
+          let _in2 = _0_newMax;
+          laps = _in0;
+          section = _in1;
+          currentMax = _in2;
+          continue TAIL_CALL_START;
+        } else {
+          let _in3 = (laps).slice(_dafny.ONE);
+          let _in4 = section;
+          let _in5 = currentMax;
+          laps = _in3;
+          section = _in4;
+          currentMax = _in5;
+          continue TAIL_CALL_START;
+        }
+      }
+    };
+    static MaxBySection(laps, section) {
+      return TalkTimer.__default.MaxBySectionHelper(laps, section, new BigNumber(-1));
+    };
+    static CollectAllSectionsHelper(laps, seen) {
+      TAIL_CALL_START: while (true) {
+        if ((new BigNumber((laps).length)).isEqualTo(_dafny.ZERO)) {
+          return seen;
+        } else if ((((laps)[_dafny.ZERO]).dtor_selected) && (!_dafny.areEqual(((laps)[_dafny.ZERO]).dtor_section, _dafny.Seq.UnicodeFromString("")))) {
+          let _0_section = ((laps)[_dafny.ZERO]).dtor_section;
+          let _1_updatedSeen = ((_dafny.Seq.contains(seen, _0_section)) ? (seen) : (_dafny.Seq.Concat(seen, _dafny.Seq.of(_0_section))));
+          let _in0 = (laps).slice(_dafny.ONE);
+          let _in1 = _1_updatedSeen;
+          laps = _in0;
+          seen = _in1;
+          continue TAIL_CALL_START;
+        } else {
+          let _in2 = (laps).slice(_dafny.ONE);
+          let _in3 = seen;
+          laps = _in2;
+          seen = _in3;
+          continue TAIL_CALL_START;
+        }
+      }
+    };
+    static CollectAllSections(laps) {
+      return TalkTimer.__default.CollectAllSectionsHelper(laps, _dafny.Seq.of());
+    };
   };
 
   $module.Lap = class Lap {
@@ -1690,13 +1853,14 @@ let TalkTimer = (function() {
     constructor(tag) {
       this.$tag = tag;
     }
-    static create_Model(currentTime, lastLapTime, laps, template, originalTemplate) {
+    static create_Model(currentTime, lastLapTime, laps, template, originalTemplate, activeSection) {
       let $dt = new Model(0);
       $dt.currentTime = currentTime;
       $dt.lastLapTime = lastLapTime;
       $dt.laps = laps;
       $dt.template = template;
       $dt.originalTemplate = originalTemplate;
+      $dt.activeSection = activeSection;
       return $dt;
     }
     get is_Model() { return this.$tag === 0; }
@@ -1705,9 +1869,10 @@ let TalkTimer = (function() {
     get dtor_laps() { return this.laps; }
     get dtor_template() { return this.template; }
     get dtor_originalTemplate() { return this.originalTemplate; }
+    get dtor_activeSection() { return this.activeSection; }
     toString() {
       if (this.$tag === 0) {
-        return "TalkTimer.Model.Model" + "(" + _dafny.toString(this.currentTime) + ", " + _dafny.toString(this.lastLapTime) + ", " + _dafny.toString(this.laps) + ", " + _dafny.toString(this.template) + ", " + _dafny.toString(this.originalTemplate) + ")";
+        return "TalkTimer.Model.Model" + "(" + _dafny.toString(this.currentTime) + ", " + _dafny.toString(this.lastLapTime) + ", " + _dafny.toString(this.laps) + ", " + _dafny.toString(this.template) + ", " + _dafny.toString(this.originalTemplate) + ", " + _dafny.toString(this.activeSection) + ")";
       } else  {
         return "<unexpected>";
       }
@@ -1716,13 +1881,13 @@ let TalkTimer = (function() {
       if (this === other) {
         return true;
       } else if (this.$tag === 0) {
-        return other.$tag === 0 && _dafny.areEqual(this.currentTime, other.currentTime) && _dafny.areEqual(this.lastLapTime, other.lastLapTime) && _dafny.areEqual(this.laps, other.laps) && _dafny.areEqual(this.template, other.template) && _dafny.areEqual(this.originalTemplate, other.originalTemplate);
+        return other.$tag === 0 && _dafny.areEqual(this.currentTime, other.currentTime) && _dafny.areEqual(this.lastLapTime, other.lastLapTime) && _dafny.areEqual(this.laps, other.laps) && _dafny.areEqual(this.template, other.template) && _dafny.areEqual(this.originalTemplate, other.originalTemplate) && _dafny.areEqual(this.activeSection, other.activeSection);
       } else  {
         return false; // unexpected
       }
     }
     static Default() {
-      return TalkTimer.Model.create_Model(_dafny.ZERO, _dafny.ZERO, _dafny.Seq.of(), _dafny.Seq.of(), _dafny.Seq.of());
+      return TalkTimer.Model.create_Model(_dafny.ZERO, _dafny.ZERO, _dafny.Seq.of(), _dafny.Seq.of(), _dafny.Seq.of(), _dafny.ZERO);
     }
     static Rtd() {
       return class {
@@ -1799,13 +1964,22 @@ let TalkTimer = (function() {
       let $dt = new Action(11);
       return $dt;
     }
-    static create_ImportLaps(laps) {
+    static create_SetActiveSection(idx) {
       let $dt = new Action(12);
+      $dt.idx = idx;
+      return $dt;
+    }
+    static create_ApplyActiveSection() {
+      let $dt = new Action(13);
+      return $dt;
+    }
+    static create_ImportLaps(laps) {
+      let $dt = new Action(14);
       $dt.laps = laps;
       return $dt;
     }
     static create_Reset() {
-      let $dt = new Action(13);
+      let $dt = new Action(15);
       return $dt;
     }
     get is_SetTime() { return this.$tag === 0; }
@@ -1820,8 +1994,10 @@ let TalkTimer = (function() {
     get is_RemoveTag() { return this.$tag === 9; }
     get is_SetTemplate() { return this.$tag === 10; }
     get is_ConsumeTemplate() { return this.$tag === 11; }
-    get is_ImportLaps() { return this.$tag === 12; }
-    get is_Reset() { return this.$tag === 13; }
+    get is_SetActiveSection() { return this.$tag === 12; }
+    get is_ApplyActiveSection() { return this.$tag === 13; }
+    get is_ImportLaps() { return this.$tag === 14; }
+    get is_Reset() { return this.$tag === 15; }
     get dtor_ms() { return this.ms; }
     get dtor_idx() { return this.idx; }
     get dtor_name() { return this.name; }
@@ -1855,8 +2031,12 @@ let TalkTimer = (function() {
       } else if (this.$tag === 11) {
         return "TalkTimer.Action.ConsumeTemplate";
       } else if (this.$tag === 12) {
-        return "TalkTimer.Action.ImportLaps" + "(" + _dafny.toString(this.laps) + ")";
+        return "TalkTimer.Action.SetActiveSection" + "(" + _dafny.toString(this.idx) + ")";
       } else if (this.$tag === 13) {
+        return "TalkTimer.Action.ApplyActiveSection";
+      } else if (this.$tag === 14) {
+        return "TalkTimer.Action.ImportLaps" + "(" + _dafny.toString(this.laps) + ")";
+      } else if (this.$tag === 15) {
         return "TalkTimer.Action.Reset";
       } else  {
         return "<unexpected>";
@@ -1890,9 +2070,13 @@ let TalkTimer = (function() {
       } else if (this.$tag === 11) {
         return other.$tag === 11;
       } else if (this.$tag === 12) {
-        return other.$tag === 12 && _dafny.areEqual(this.laps, other.laps);
+        return other.$tag === 12 && _dafny.areEqual(this.idx, other.idx);
       } else if (this.$tag === 13) {
         return other.$tag === 13;
+      } else if (this.$tag === 14) {
+        return other.$tag === 14 && _dafny.areEqual(this.laps, other.laps);
+      } else if (this.$tag === 15) {
+        return other.$tag === 15;
       } else  {
         return false; // unexpected
       }
@@ -1934,6 +2118,21 @@ let AppCore = (function() {
     };
     static CollectAllTags(laps) {
       return TalkTimer.__default.CollectAllTags(laps);
+    };
+    static SumBySection(laps, section) {
+      return TalkTimer.__default.SumBySection(laps, section);
+    };
+    static CountBySection(laps, section) {
+      return TalkTimer.__default.CountBySection(laps, section);
+    };
+    static MinBySection(laps, section) {
+      return TalkTimer.__default.MinBySection(laps, section);
+    };
+    static MaxBySection(laps, section) {
+      return TalkTimer.__default.MaxBySection(laps, section);
+    };
+    static CollectAllSections(laps) {
+      return TalkTimer.__default.CollectAllSections(laps);
     };
     static Step(m, a) {
       return TalkTimer.__default.Normalize(TalkTimer.__default.Apply(m, a));

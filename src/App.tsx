@@ -51,6 +51,26 @@ function getTagTotals(laps: Lap[]): { tag: string; total: number; count: number 
     .sort((a, b) => b.total - a.total)
 }
 
+function getSectionStats(laps: Lap[]): { section: string; total: number; count: number; avg: number; best: number; worst: number }[] {
+  const sections = Api.CollectAllSections(laps)
+  return sections
+    .map(section => {
+      const count = Api.CountBySection(laps, section)
+      const total = Api.SumBySection(laps, section)
+      const best = Api.MinBySection(laps, section)
+      const worst = Api.MaxBySection(laps, section)
+      return {
+        section,
+        total,
+        count,
+        avg: count > 0 ? Math.floor(total / count) : 0,
+        best: best >= 0 ? best : 0,
+        worst: worst >= 0 ? worst : 0
+      }
+    })
+    .sort((a, b) => b.total - a.total)
+}
+
 // Generate markdown export of selected laps
 function generateMarkdown(laps: Lap[]): string {
   const lines = laps
@@ -201,14 +221,22 @@ function App() {
       const h1 = Api.Do(h, setTimeAction)
       const h2 = Api.Do(h1, createLapAction)
 
-      // In practice mode, auto-label from template
-      if (model.template.length > 0) {
+      // In practice mode: if activeSection is set, use it; otherwise consume from queue
+      if (model.activeSection >= 0) {
+        const applyAction = Api.actionFromJson({ type: 'ApplyActiveSection' })
+        return Api.Do(h2, applyAction)
+      } else if (model.template.length > 0) {
         const consumeAction = Api.actionFromJson({ type: 'ConsumeTemplate' })
         return Api.Do(h2, consumeAction)
       }
 
       return h2
     })
+  }
+
+  // Set active section for jump-to practice
+  const setActiveSection = (idx: number) => {
+    dispatch({ type: 'SetActiveSection', idx })
   }
 
   // Label a lap
@@ -335,6 +363,7 @@ function App() {
   const selectedTotal = getSelectedTotal(model.laps)
   const selectedCount = getSelectedCount(model.laps)
   const tagTotals = getTagTotals(model.laps)
+  const sectionStats = getSectionStats(model.laps)
 
   // Copy markdown to clipboard
   const copyMarkdown = async () => {
@@ -388,14 +417,44 @@ function App() {
         </button>
       </div>
 
-      {model.template.length > 0 && (
-        <div className="template-queue">
-          <span className="queue-label">Next:</span>
-          <span className="queue-item">
-            {model.template[0].section} (expected {formatTime(model.template[0].expectedDuration)})
-          </span>
-          {model.template.length > 1 && (
-            <span className="queue-remaining">+{model.template.length - 1} more</span>
+      {model.originalTemplate.length > 0 && (
+        <div className="section-picker">
+          <div className="picker-header">
+            <span className="picker-label">Practice Section:</span>
+            <button
+              className={`section-item ${model.activeSection === -1 ? 'active' : ''}`}
+              onClick={() => setActiveSection(-1)}
+            >
+              Sequential
+            </button>
+          </div>
+          <div className="section-list">
+            {model.originalTemplate.map((entry, idx) => (
+              <button
+                key={idx}
+                className={`section-item ${model.activeSection === idx ? 'active' : ''}`}
+                onClick={() => setActiveSection(idx)}
+              >
+                <span className="section-name">{entry.section}</span>
+                <span className="section-expected">({formatTime(entry.expectedDuration)})</span>
+              </button>
+            ))}
+          </div>
+          {model.activeSection === -1 && model.template.length > 0 && (
+            <div className="queue-indicator">
+              <span className="queue-label">Next:</span>
+              <span className="queue-item">
+                {model.template[0].section} (expected {formatTime(model.template[0].expectedDuration)})
+              </span>
+              {model.template.length > 1 && (
+                <span className="queue-remaining">+{model.template.length - 1} more</span>
+              )}
+            </div>
+          )}
+          {model.activeSection >= 0 && (
+            <div className="active-indicator">
+              Practicing: {model.originalTemplate[model.activeSection].section}
+            </div>
           )}
         </div>
       )}
@@ -561,6 +620,28 @@ function App() {
                 <span className="tag-total-name">{tag}</span>
                 <span className="tag-total-time">{formatTime(total)}</span>
                 <span className="tag-total-count">({count})</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {sectionStats.length > 0 && (
+        <div className="section-stats">
+          <h3>By Section</h3>
+          <div className="section-stats-list">
+            {sectionStats.map(({ section, total, count, avg, best, worst }) => (
+              <div key={section} className="section-stat-item">
+                <span className="section-stat-name">{section}</span>
+                <span className="section-stat-total">{formatTime(total)}</span>
+                <span className="section-stat-count">({count})</span>
+                {count > 1 && (
+                  <>
+                    <span className="section-stat-avg">avg: {formatTime(avg)}</span>
+                    <span className="section-stat-best">best: {formatTime(best)}</span>
+                    <span className="section-stat-worst">worst: {formatTime(worst)}</span>
+                  </>
+                )}
               </div>
             ))}
           </div>

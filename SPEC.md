@@ -82,6 +82,33 @@ A talk rehearsal timer that tracks lap times, organizes takes by section, and co
 - [trusted] Tags are included in Markdown export
 - [trusted] Tags are parsed from Markdown import
 
+## Feature: Jump to Section Practice Mode
+
+- [verified] Setting active section updates model state to selected index
+- [verified] Active section index must be -1 (sequential) or valid index into originalTemplate
+- [verified] ApplyActiveSection labels last lap from active section entry
+- [verified] ApplyActiveSection sets the lap to selected
+- [verified] ApplyActiveSection sets expected duration from template
+- [verified] ApplyActiveSection sets tags from template
+- [verified] ApplyActiveSection preserves original lap duration
+- [verified] ApplyActiveSection preserves original lap timestamp
+- [verified] ApplyActiveSection does not consume template queue
+- [trusted] User can click any section in template to set it as active
+- [trusted] Active section is visually highlighted in section picker
+- [trusted] "Sequential" option returns to default queue-based mode
+
+## Feature: Section Statistics
+
+- [verified] SumBySection is non-negative when all durations are non-negative
+- [verified] SumBySection only counts selected laps
+- [verified] SumBySection only counts laps with the specified section
+- [verified] CountBySection is non-negative
+- [verified] MinBySection returns -1 (no data) or a valid duration
+- [verified] MaxBySection returns -1 (no data) or a valid duration
+- [trusted] Section statistics panel shows count, total, average, best, worst per section
+- [trusted] Section statistics only include selected laps
+- [trusted] Best/worst only shown when multiple takes exist for a section
+
 ## Feature: Keyboard & Accessibility
 
 - [trusted] All primary functions are accessible via keyboard shortcuts for hands-free operation

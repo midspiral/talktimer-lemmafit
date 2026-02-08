@@ -16,8 +16,19 @@
   },
   "axioms": [],
   "compiled": true,
-  "lastCompiled": "2026-02-07T22:25:16.817Z",
-  "specContent": "# Talk Timer Specification\n\nA talk rehearsal timer that tracks lap times, organizes takes by section, and computes optimal talk duration.\n\n## Feature: Timer Core Logic\n\n- [verified] Timer displays elapsed time in minutes and seconds format (MM:SS)\n- [verified] A single tap or keypress creates a lap marker at the current elapsed time\n- [verified] Each lap records the duration from the previous lap marker (or start) to the current marker\n\n## Feature: Session Data Model\n\n- [verified] Sessions are organized hierarchically: a Talk contains Sections, each Section contains one or more Takes\n- [verified] Each lap can be labeled with a section name after it is recorded\n- [verified] All takes are preserved with their timestamps and durations\n\n## Feature: Take Selection & Assembly\n\n- [verified] Users can manually select which takes to include in the final talk total\n- [verified] Users can delete unwanted or noisy takes (without affecting other takes' durations)\n- [verified] Users can manually adjust the duration of any take\n- [verified] Total estimated talk duration is computed by summing the selected takes\n- [verified] Selected total equals sum of selected lap durations\n- [verified] Selected total is non-negative when all durations are non-negative\n\n## Feature: Lap Reordering\n\n- [verified] Moving a lap up swaps it with the previous lap\n- [verified] Moving a lap down swaps it with the next lap\n- [verified] Moving preserves all lap data (duration, label, selection, expected)\n- [verified] Moving the first lap up has no effect\n- [verified] Moving the last lap down has no effect\n\n## Feature: Practice Mode\n\n- [verified] Starting practice captures section labels as a template queue\n- [verified] Each lap in practice mode consumes one template entry\n- [verified] Consumed template entry sets the lap's section label\n- [verified] Consumed template entry sets the lap's expected duration\n- [verified] Consumed template entry sets the lap's tags\n- [verified] Template queue length decreases by one after consumption\n- [verified] Consuming template sets all fields (section, selected, tags, expected) from entry\n- [verified] Consuming template preserves original lap duration\n- [verified] Consuming template preserves original lap timestamp\n- [verified] Reset in practice mode restores ORIGINAL template as laps (not remaining)\n- [verified] Reset in practice mode clears both template and originalTemplate (exits practice mode)\n- [verified] Reset in practice mode: each restored lap has correct section from original template\n- [verified] Reset in practice mode: each restored lap has correct tags from original template\n\n## Feature: Import/Export\n\n- [verified] Importing laps preserves existing laps\n- [verified] Imported laps are appended to the end of the lap list\n- [verified] Import is atomic (single undo removes all imported laps)\n\n## Feature: Undo/Redo System\n\n- [verified] All lap, label, select, and delete actions support undo and redo operations\n- [verified] The undo/redo stack preserves complete action history for the session\n\n## Feature: User Interface\n\n- [trusted] The app provides a translucent overlay mode that stays visible but unobtrusive during rehearsal\n- [trusted] Visual design uses soft muted colors for minimal distraction\n- [trusted] A soft visual indicator shows progress toward a target talk duration when set\n- [trusted] Sessions can be exported as Markdown summaries\n\n## Feature: Tagging\n\n- [verified] Each lap can have zero or more tags\n- [verified] Adding a tag to a lap makes it present in the lap's tags\n- [verified] Removing a tag from a lap makes it absent from the lap's tags\n- [verified] Adding a tag to a lap preserves other lap data\n- [verified] Removing a tag from a lap preserves other lap data\n- [trusted] Tags are displayed as chips on each lap\n- [trusted] Users can add tags via a + button\n- [verified] SumByTag is non-negative when all durations are non-negative\n- [verified] SumByTag only counts selected laps\n- [verified] SumByTag only counts laps with the specified tag\n- [verified] SumByTag includes duration when lap is selected and has tag\n- [trusted] Total time by tag is displayed for selected laps\n- [trusted] Tags are included in Markdown export\n- [trusted] Tags are parsed from Markdown import\n\n## Feature: Keyboard & Accessibility\n\n- [trusted] All primary functions are accessible via keyboard shortcuts for hands-free operation\n- [trusted] The app can be quickly shown and hidden during rehearsal\n",
+  "lastCompiled": "2026-02-08T02:57:01.898Z",
+  "generatedFileHash": "a3cb80e5e2bbf4b8200fed3c575482f4",
+  "generatedFileModified": false,
+  "generatedFileWarning": null,
+  "typescript": {
+    "enabled": true,
+    "passed": true,
+    "userErrors": [],
+    "generatedErrors": [],
+    "whitelistedErrors": [],
+    "totalErrors": 0
+  },
+  "specContent": "# Talk Timer Specification\n\nA talk rehearsal timer that tracks lap times, organizes takes by section, and computes optimal talk duration.\n\n## Feature: Timer Core Logic\n\n- [verified] Timer displays elapsed time in minutes and seconds format (MM:SS)\n- [verified] A single tap or keypress creates a lap marker at the current elapsed time\n- [verified] Each lap records the duration from the previous lap marker (or start) to the current marker\n\n## Feature: Session Data Model\n\n- [verified] Sessions are organized hierarchically: a Talk contains Sections, each Section contains one or more Takes\n- [verified] Each lap can be labeled with a section name after it is recorded\n- [verified] All takes are preserved with their timestamps and durations\n\n## Feature: Take Selection & Assembly\n\n- [verified] Users can manually select which takes to include in the final talk total\n- [verified] Users can delete unwanted or noisy takes (without affecting other takes' durations)\n- [verified] Users can manually adjust the duration of any take\n- [verified] Total estimated talk duration is computed by summing the selected takes\n- [verified] Selected total equals sum of selected lap durations\n- [verified] Selected total is non-negative when all durations are non-negative\n\n## Feature: Lap Reordering\n\n- [verified] Moving a lap up swaps it with the previous lap\n- [verified] Moving a lap down swaps it with the next lap\n- [verified] Moving preserves all lap data (duration, label, selection, expected)\n- [verified] Moving the first lap up has no effect\n- [verified] Moving the last lap down has no effect\n\n## Feature: Practice Mode\n\n- [verified] Starting practice captures section labels as a template queue\n- [verified] Each lap in practice mode consumes one template entry\n- [verified] Consumed template entry sets the lap's section label\n- [verified] Consumed template entry sets the lap's expected duration\n- [verified] Consumed template entry sets the lap's tags\n- [verified] Template queue length decreases by one after consumption\n- [verified] Consuming template sets all fields (section, selected, tags, expected) from entry\n- [verified] Consuming template preserves original lap duration\n- [verified] Consuming template preserves original lap timestamp\n- [verified] Reset in practice mode restores ORIGINAL template as laps (not remaining)\n- [verified] Reset in practice mode clears both template and originalTemplate (exits practice mode)\n- [verified] Reset in practice mode: each restored lap has correct section from original template\n- [verified] Reset in practice mode: each restored lap has correct tags from original template\n\n## Feature: Import/Export\n\n- [verified] Importing laps preserves existing laps\n- [verified] Imported laps are appended to the end of the lap list\n- [verified] Import is atomic (single undo removes all imported laps)\n\n## Feature: Undo/Redo System\n\n- [verified] All lap, label, select, and delete actions support undo and redo operations\n- [verified] The undo/redo stack preserves complete action history for the session\n\n## Feature: User Interface\n\n- [trusted] The app provides a translucent overlay mode that stays visible but unobtrusive during rehearsal\n- [trusted] Visual design uses soft muted colors for minimal distraction\n- [trusted] A soft visual indicator shows progress toward a target talk duration when set\n- [trusted] Sessions can be exported as Markdown summaries\n\n## Feature: Tagging\n\n- [verified] Each lap can have zero or more tags\n- [verified] Adding a tag to a lap makes it present in the lap's tags\n- [verified] Removing a tag from a lap makes it absent from the lap's tags\n- [verified] Adding a tag to a lap preserves other lap data\n- [verified] Removing a tag from a lap preserves other lap data\n- [trusted] Tags are displayed as chips on each lap\n- [trusted] Users can add tags via a + button\n- [verified] SumByTag is non-negative when all durations are non-negative\n- [verified] SumByTag only counts selected laps\n- [verified] SumByTag only counts laps with the specified tag\n- [verified] SumByTag includes duration when lap is selected and has tag\n- [trusted] Total time by tag is displayed for selected laps\n- [trusted] Tags are included in Markdown export\n- [trusted] Tags are parsed from Markdown import\n\n## Feature: Jump to Section Practice Mode\n\n- [verified] Setting active section updates model state to selected index\n- [verified] Active section index must be -1 (sequential) or valid index into originalTemplate\n- [verified] ApplyActiveSection labels last lap from active section entry\n- [verified] ApplyActiveSection sets the lap to selected\n- [verified] ApplyActiveSection sets expected duration from template\n- [verified] ApplyActiveSection sets tags from template\n- [verified] ApplyActiveSection preserves original lap duration\n- [verified] ApplyActiveSection preserves original lap timestamp\n- [verified] ApplyActiveSection does not consume template queue\n- [trusted] User can click any section in template to set it as active\n- [trusted] Active section is visually highlighted in section picker\n- [trusted] \"Sequential\" option returns to default queue-based mode\n\n## Feature: Section Statistics\n\n- [verified] SumBySection is non-negative when all durations are non-negative\n- [verified] SumBySection only counts selected laps\n- [verified] SumBySection only counts laps with the specified section\n- [verified] CountBySection is non-negative\n- [verified] MinBySection returns -1 (no data) or a valid duration\n- [verified] MaxBySection returns -1 (no data) or a valid duration\n- [trusted] Section statistics panel shows count, total, average, best, worst per section\n- [trusted] Section statistics only include selected laps\n- [trusted] Best/worst only shown when multiple takes exist for a section\n\n## Feature: Keyboard & Accessibility\n\n- [trusted] All primary functions are accessible via keyboard shortcuts for hands-free operation\n- [trusted] The app can be quickly shown and hidden during rehearsal\n",
   "ackedSpecContent": "# Talk Timer Specification\n\nA talk rehearsal timer that tracks lap times, organizes takes by section, and computes optimal talk duration.\n\n## Feature: Timer Core Logic\n\n- [verified] Timer displays elapsed time in minutes and seconds format (MM:SS)\n- [verified] A single tap or keypress creates a lap marker at the current elapsed time\n- [verified] Each lap records the duration from the previous lap marker (or start) to the current marker\n\n## Feature: Session Data Model\n\n- [verified] Sessions are organized hierarchically: a Talk contains Sections, each Section contains one or more Takes\n- [verified] Each lap can be labeled with a section name after it is recorded\n- [verified] All takes are preserved with their timestamps and durations\n\n## Feature: Take Selection & Assembly\n\n- [verified] Users can manually select which takes to include in the final talk total\n- [verified] Users can delete unwanted or noisy takes\n- [verified] Total estimated talk duration is computed by summing the selected takes\n\n## Feature: Undo/Redo System\n\n- [verified] All lap, label, select, and delete actions support undo and redo operations\n- [verified] The undo/redo stack preserves complete action history for the session\n\n## Feature: User Interface\n\n- [trusted] The app provides a translucent overlay mode that stays visible but unobtrusive during rehearsal\n- [trusted] Visual design uses soft muted colors for minimal distraction\n- [trusted] A soft visual indicator shows progress toward a target talk duration when set\n- [trusted] Sessions can be exported as Markdown summaries\n\n## Feature: Keyboard & Accessibility\n\n- [trusted] All primary functions are accessible via keyboard shortcuts for hands-free operation\n- [trusted] The app can be quickly shown and hidden during rehearsal\n",
   "specQueue": [
     {
@@ -424,10 +435,10 @@
       "text": ""
     },
     {
-      "id": "ff78b76d",
+      "id": "91e52022",
       "line": 85,
       "type": "added",
-      "text": "## Feature: Keyboard & Accessibility"
+      "text": "## Feature: Jump to Section Practice Mode"
     },
     {
       "id": "39fbd3e5",
@@ -436,23 +447,185 @@
       "text": ""
     },
     {
-      "id": "bf66a8d7",
+      "id": "9f8a3e6a",
       "line": 87,
+      "type": "added",
+      "text": "- [verified] Setting active section updates model state to selected index"
+    },
+    {
+      "id": "79e55f06",
+      "line": 88,
+      "type": "added",
+      "text": "- [verified] Active section index must be -1 (sequential) or valid index into originalTemplate"
+    },
+    {
+      "id": "099741af",
+      "line": 89,
+      "type": "added",
+      "text": "- [verified] ApplyActiveSection labels last lap from active section entry"
+    },
+    {
+      "id": "3f4923c0",
+      "line": 90,
+      "type": "added",
+      "text": "- [verified] ApplyActiveSection sets the lap to selected"
+    },
+    {
+      "id": "c72457ab",
+      "line": 91,
+      "type": "added",
+      "text": "- [verified] ApplyActiveSection sets expected duration from template"
+    },
+    {
+      "id": "11a71ed6",
+      "line": 92,
+      "type": "added",
+      "text": "- [verified] ApplyActiveSection sets tags from template"
+    },
+    {
+      "id": "284c433c",
+      "line": 93,
+      "type": "added",
+      "text": "- [verified] ApplyActiveSection preserves original lap duration"
+    },
+    {
+      "id": "0487403d",
+      "line": 94,
+      "type": "added",
+      "text": "- [verified] ApplyActiveSection preserves original lap timestamp"
+    },
+    {
+      "id": "ad2af19d",
+      "line": 95,
+      "type": "added",
+      "text": "- [verified] ApplyActiveSection does not consume template queue"
+    },
+    {
+      "id": "fa496e37",
+      "line": 96,
+      "type": "added",
+      "text": "- [trusted] User can click any section in template to set it as active"
+    },
+    {
+      "id": "eb53159f",
+      "line": 97,
+      "type": "added",
+      "text": "- [trusted] Active section is visually highlighted in section picker"
+    },
+    {
+      "id": "d992c08e",
+      "line": 98,
+      "type": "added",
+      "text": "- [trusted] \"Sequential\" option returns to default queue-based mode"
+    },
+    {
+      "id": "a542c2f8",
+      "line": 99,
+      "type": "added",
+      "text": ""
+    },
+    {
+      "id": "cf7f4573",
+      "line": 100,
+      "type": "added",
+      "text": "## Feature: Section Statistics"
+    },
+    {
+      "id": "849fb018",
+      "line": 101,
+      "type": "added",
+      "text": ""
+    },
+    {
+      "id": "2a8cf036",
+      "line": 102,
+      "type": "added",
+      "text": "- [verified] SumBySection is non-negative when all durations are non-negative"
+    },
+    {
+      "id": "2ea6a073",
+      "line": 103,
+      "type": "added",
+      "text": "- [verified] SumBySection only counts selected laps"
+    },
+    {
+      "id": "4d30451e",
+      "line": 104,
+      "type": "added",
+      "text": "- [verified] SumBySection only counts laps with the specified section"
+    },
+    {
+      "id": "196cdf60",
+      "line": 105,
+      "type": "added",
+      "text": "- [verified] CountBySection is non-negative"
+    },
+    {
+      "id": "74307c09",
+      "line": 106,
+      "type": "added",
+      "text": "- [verified] MinBySection returns -1 (no data) or a valid duration"
+    },
+    {
+      "id": "ac5a1e77",
+      "line": 107,
+      "type": "added",
+      "text": "- [verified] MaxBySection returns -1 (no data) or a valid duration"
+    },
+    {
+      "id": "17a0dd2f",
+      "line": 108,
+      "type": "added",
+      "text": "- [trusted] Section statistics panel shows count, total, average, best, worst per section"
+    },
+    {
+      "id": "54d1e1c1",
+      "line": 109,
+      "type": "added",
+      "text": "- [trusted] Section statistics only include selected laps"
+    },
+    {
+      "id": "6156a790",
+      "line": 110,
+      "type": "added",
+      "text": "- [trusted] Best/worst only shown when multiple takes exist for a section"
+    },
+    {
+      "id": "479567cb",
+      "line": 111,
+      "type": "added",
+      "text": ""
+    },
+    {
+      "id": "09fba12e",
+      "line": 112,
+      "type": "added",
+      "text": "## Feature: Keyboard & Accessibility"
+    },
+    {
+      "id": "7e1ed02e",
+      "line": 113,
+      "type": "added",
+      "text": ""
+    },
+    {
+      "id": "0ed439c6",
+      "line": 114,
       "type": "added",
       "text": "- [trusted] All primary functions are accessible via keyboard shortcuts for hands-free operation"
     },
     {
-      "id": "ecdf2d7e",
-      "line": 88,
+      "id": "6614ec26",
+      "line": 115,
       "type": "added",
       "text": "- [trusted] The app can be quickly shown and hidden during rehearsal"
     },
     {
-      "id": "f5e86a42",
-      "line": 89,
+      "id": "6c65a5ee",
+      "line": 116,
       "type": "added",
       "text": ""
     }
   ],
-  "timestamp": "2026-02-07T22:25:16.817Z"
+  "timestamp": "2026-02-08T02:58:51.134Z"
 }
