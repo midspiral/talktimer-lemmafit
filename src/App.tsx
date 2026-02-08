@@ -439,44 +439,34 @@ function App() {
         </button>
       </div>
 
-      {model.originalTemplate.length > 0 && (
-        <div className="section-picker">
-          <div className="picker-header">
-            <span className="picker-label">Jump to Section:</span>
-          </div>
-          <div className="section-list">
-            {model.originalTemplate.map((entry, idx) => (
-              <button
-                key={idx}
-                className={`section-item ${model.activeSection === idx ? 'active' : ''} ${model.activeSection === idx && repeatMode ? 'repeat' : ''}`}
-                onClick={() => handleSectionClick(idx)}
-              >
-                {model.activeSection === idx && repeatMode && <span className="repeat-icon">↻</span>}
-                <span className="section-name">{entry.section}</span>
-                <span className="section-expected">({formatTime(entry.expectedDuration)})</span>
-              </button>
-            ))}
-          </div>
-          {model.activeSection === -1 && model.template.length > 0 && (
-            <div className="queue-indicator">
-              <span className="queue-label">Next:</span>
-              <span className="queue-item">
-                {model.template[0].section} (expected {formatTime(model.template[0].expectedDuration)})
-              </span>
-              {model.template.length > 1 && (
-                <span className="queue-remaining">+{model.template.length - 1} more</span>
-              )}
+      {model.originalTemplate.length > 0 && (() => {
+        // Next sequential index: where we are in the queue
+        const nextSequentialIdx = model.originalTemplate.length - model.template.length
+        // Sections that have been practiced (appear in laps)
+        const practicedSections = new Set(model.laps.filter(l => l.selected).map(l => l.section))
+        return (
+          <div className="section-picker">
+            <div className="section-list">
+              {model.originalTemplate.map((entry, idx) => {
+                const isActive = model.activeSection === idx
+                const isNext = model.activeSection === -1 && idx === nextSequentialIdx && model.template.length > 0
+                const isDone = practicedSections.has(entry.section)
+                return (
+                  <button
+                    key={idx}
+                    className={`section-item ${isActive ? 'active' : ''} ${isActive && repeatMode ? 'repeat' : ''} ${isNext ? 'next' : ''} ${isDone ? 'done' : ''}`}
+                    onClick={() => handleSectionClick(idx)}
+                  >
+                    {isActive && repeatMode && <span className="repeat-icon">↻</span>}
+                    <span className="section-name">{entry.section}</span>
+                    <span className="section-expected">({formatTime(entry.expectedDuration)})</span>
+                  </button>
+                )
+              })}
             </div>
-          )}
-          {model.activeSection >= 0 && (
-            <div className="active-indicator">
-              {repeatMode ? '↻ Repeating: ' : 'Next: '}
-              {model.originalTemplate[model.activeSection].section}
-              {!repeatMode && <span className="click-hint"> (click again to repeat)</span>}
-            </div>
-          )}
-        </div>
-      )}
+          </div>
+        )
+      })()}
 
       {model.laps.length > 0 && (
         <div className="laps">
