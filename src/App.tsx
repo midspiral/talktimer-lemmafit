@@ -186,7 +186,7 @@ function App() {
       if (startTime === null) {
         setStartTime(Date.now())
       } else {
-        setStartTime(Date.now() - displayTime)
+        setStartTime(Date.now() - displayTimeRef.current)
       }
       setRunning(true)
     }
