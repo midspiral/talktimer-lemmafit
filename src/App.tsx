@@ -115,8 +115,8 @@ function parseMarkdown(text: string): { section: string; duration: number; tags:
 }
 
 function App() {
-  // Timer state - starts running automatically
-  const [running, setRunning] = useState(true)
+  // Timer state - starts paused
+  const [running, setRunning] = useState(false)
   const [startTime, setStartTime] = useState(() => Date.now())
   const [displayTime, setDisplayTime] = useState(0)
 
