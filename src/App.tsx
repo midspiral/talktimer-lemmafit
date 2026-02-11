@@ -115,9 +115,8 @@ function parseMarkdown(text: string): { section: string; duration: number; tags:
 }
 
 function App() {
-  // Timer state
-  const [running, setRunning] = useState(false)
-  const [startTime, setStartTime] = useState<number | null>(null)
+  // Timer state - always running
+  const [startTime, setStartTime] = useState(() => Date.now())
   const [displayTime, setDisplayTime] = useState(0)
 
   // Model state with history for undo/redo (using verified Dafny history)
@@ -166,36 +165,25 @@ function App() {
     setDafnyHistory((h: DafnyHistory) => Api.Redo(h))
   }, [])
 
-  // Timer effect
+  // Timer effect - always running
   useEffect(() => {
-    if (!running || startTime === null) return
-
     const interval = setInterval(() => {
       const elapsed = Date.now() - startTime
       setDisplayTime(elapsed)
     }, 100)
 
     return () => clearInterval(interval)
-  }, [running, startTime])
+  }, [startTime])
 
-  // Start/stop timer
-  const toggleTimer = () => {
-    if (running) {
-      setRunning(false)
-    } else {
-      if (startTime === null) {
-        setStartTime(Date.now())
-      } else {
-        setStartTime(Date.now() - displayTimeRef.current)
-      }
-      setRunning(true)
-    }
+  // Restart timer (reset counter to 0, keeps running)
+  const restartTimer = () => {
+    setStartTime(Date.now())
+    setDisplayTime(0)
   }
 
-  // Reset timer (undoable)
+  // Reset timer and laps (timer keeps running)
   const resetTimer = () => {
-    setRunning(false)
-    setStartTime(null)
+    setStartTime(Date.now())
     setDisplayTime(0)
     setRepeatMode(false)
     dispatch({ type: 'Reset' })
@@ -207,12 +195,10 @@ function App() {
       .filter(lap => lap.section !== '')
       .map(lap => ({ section: lap.section, expectedDuration: lap.duration, tags: lap.tags }))
     if (labels.length === 0) return
-    setRunning(false)
-    setStartTime(null)
+    setStartTime(Date.now())
     setDisplayTime(0)
     setRepeatMode(false)
-    // Set template then reset (template survives reset? No - reset clears it)
-    // We need to set template AFTER reset, so do it in one setDafnyHistory call
+    // Set template after reset in one setDafnyHistory call
     setDafnyHistory((h: DafnyHistory) => {
       const resetAction = Api.actionFromJson({ type: 'Reset' })
       const h1 = Api.Do(h, resetAction)
@@ -368,11 +354,7 @@ function App() {
 
       if (e.key === ' ' && !e.metaKey && !e.ctrlKey) {
         e.preventDefault()
-        if (running) {
-          createLap()
-        } else {
-          toggleTimer()
-        }
+        createLap()
       } else if (e.key === 'z' && (e.metaKey || e.ctrlKey) && !e.shiftKey) {
         e.preventDefault()
         undo()
@@ -385,7 +367,7 @@ function App() {
 
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [running, editingLap, editingDuration, editingTagsIdx, undo, redo])
+  }, [editingLap, editingDuration, editingTagsIdx, undo, redo])
 
   const selectedTotal = getSelectedTotal(model.laps)
   const selectedCount = getSelectedCount(model.laps)
@@ -410,13 +392,12 @@ function App() {
       </div>
 
       <div className="controls">
-        <button onClick={toggleTimer} className="control-btn">
-          {running ? 'Pause' : (startTime ? 'Resume' : 'Start')}
+        <button onClick={restartTimer} className="control-btn">
+          Restart
         </button>
         <button
           onClick={createLap}
           className="control-btn lap-btn"
-          disabled={!running}
         >
           Lap
         </button>
