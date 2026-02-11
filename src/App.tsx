@@ -115,7 +115,8 @@ function parseMarkdown(text: string): { section: string; duration: number; tags:
 }
 
 function App() {
-  // Timer state - always running
+  // Timer state - starts running automatically
+  const [running, setRunning] = useState(true)
   const [startTime, setStartTime] = useState(() => Date.now())
   const [displayTime, setDisplayTime] = useState(0)
 
@@ -165,26 +166,40 @@ function App() {
     setDafnyHistory((h: DafnyHistory) => Api.Redo(h))
   }, [])
 
-  // Timer effect - always running
+  // Timer effect
   useEffect(() => {
+    if (!running) return
+
     const interval = setInterval(() => {
       const elapsed = Date.now() - startTime
       setDisplayTime(elapsed)
     }, 100)
 
     return () => clearInterval(interval)
-  }, [startTime])
+  }, [running, startTime])
 
-  // Restart timer (reset counter to 0, keeps running)
+  // Stop/resume timer
+  const toggleTimer = () => {
+    if (running) {
+      setRunning(false)
+    } else {
+      setStartTime(Date.now() - displayTimeRef.current)
+      setRunning(true)
+    }
+  }
+
+  // Restart timer (reset counter to 0, starts running)
   const restartTimer = () => {
     setStartTime(Date.now())
     setDisplayTime(0)
+    setRunning(true)
   }
 
-  // Reset timer and laps (timer keeps running)
+  // Reset timer and laps (restarts timer)
   const resetTimer = () => {
     setStartTime(Date.now())
     setDisplayTime(0)
+    setRunning(true)
     setRepeatMode(false)
     dispatch({ type: 'Reset' })
   }
@@ -197,6 +212,7 @@ function App() {
     if (labels.length === 0) return
     setStartTime(Date.now())
     setDisplayTime(0)
+    setRunning(true)
     setRepeatMode(false)
     // Set template after reset in one setDafnyHistory call
     setDafnyHistory((h: DafnyHistory) => {
@@ -400,6 +416,9 @@ function App() {
           className="control-btn lap-btn"
         >
           Lap
+        </button>
+        <button onClick={toggleTimer} className="control-btn">
+          {running ? 'Stop' : 'Resume'}
         </button>
         <button
           onClick={resetTimer}
