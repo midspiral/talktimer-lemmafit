@@ -1564,7 +1564,7 @@ let TalkTimer = (function() {
           return _dafny.Seq.Concat(_0___accumulator, _dafny.Seq.of());
         } else {
           let _1_newAcc = ((((laps)[_dafny.ZERO]).dtor_selected) ? ((acc).plus(((laps)[_dafny.ZERO]).dtor_duration)) : (acc));
-          _0___accumulator = _dafny.Seq.Concat(_0___accumulator, _dafny.Seq.of(_1_newAcc));
+          _0___accumulator = _dafny.Seq.Concat(_0___accumulator, _dafny.Seq.of(acc));
           let _in0 = (laps).slice(_dafny.ONE);
           let _in1 = _1_newAcc;
           laps = _in0;

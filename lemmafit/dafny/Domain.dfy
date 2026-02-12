@@ -616,20 +616,20 @@ module TalkTimer refines Domain {
   }
 
   //----------------------------------------------------------------------
-  // Running Totals (prefix sums of selected lap durations)
+  // Running Totals (prefix sums of selected lap durations, excluding current)
   //----------------------------------------------------------------------
 
-  // Helper: compute running totals with an accumulator
+  // Helper: RunningTotals[i] = sum of selected durations in laps[..i] (excludes lap i)
   function RunningTotalsHelper(laps: seq<Lap>, acc: int): seq<int>
     ensures |RunningTotalsHelper(laps, acc)| == |laps|
   {
     if |laps| == 0 then []
     else
       var newAcc := if laps[0].selected then acc + laps[0].duration else acc;
-      [newAcc] + RunningTotalsHelper(laps[1..], newAcc)
+      [acc] + RunningTotalsHelper(laps[1..], newAcc)
   }
 
-  // Compute running totals: RunningTotals(laps)[i] = sum of selected durations in laps[..i+1]
+  // Compute running totals: RunningTotals(laps)[i] = sum of selected durations in laps[..i]
   function RunningTotals(laps: seq<Lap>): seq<int>
     ensures |RunningTotals(laps)| == |laps|
   {
@@ -641,28 +641,11 @@ module TalkTimer refines Domain {
     ensures |RunningTotals(laps)| == |laps|
   {}
 
-  // [verified] Last running total equals selected total
-  lemma RunningTotalsFinalEqualsSelectedTotal(laps: seq<Lap>)
+  // [verified] First running total is always zero
+  lemma RunningTotalsFirstIsZero(laps: seq<Lap>)
     requires |laps| > 0
-    ensures RunningTotals(laps)[|laps| - 1] == SelectedTotal(laps)
-  {
-    RunningTotalsHelperFinalEqualsSelectedTotal(laps, 0);
-  }
-
-  // Helper lemma: final element of RunningTotalsHelper equals acc + SelectedTotal
-  lemma RunningTotalsHelperFinalEqualsSelectedTotal(laps: seq<Lap>, acc: int)
-    requires |laps| > 0
-    ensures RunningTotalsHelper(laps, acc)[|laps| - 1] == acc + SelectedTotal(laps)
-  {
-    var newAcc := if laps[0].selected then acc + laps[0].duration else acc;
-    if |laps| == 1 {
-      assert laps[1..] == [];
-      assert RunningTotalsHelper(laps, acc) == [newAcc];
-      assert SelectedDurations(laps[1..]) == [];
-    } else {
-      RunningTotalsHelperFinalEqualsSelectedTotal(laps[1..], newAcc);
-    }
-  }
+    ensures RunningTotals(laps)[0] == 0
+  {}
 
   // [verified] Running totals are non-negative when all durations are non-negative
   lemma RunningTotalsNonNegative(laps: seq<Lap>)
