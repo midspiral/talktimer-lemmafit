@@ -1557,6 +1557,25 @@ let TalkTimer = (function() {
     static SelectedCount(laps) {
       return new BigNumber((TalkTimer.__default.SelectedDurations(laps)).length);
     };
+    static RunningTotalsHelper(laps, acc) {
+      let _0___accumulator = _dafny.Seq.of();
+      TAIL_CALL_START: while (true) {
+        if ((new BigNumber((laps).length)).isEqualTo(_dafny.ZERO)) {
+          return _dafny.Seq.Concat(_0___accumulator, _dafny.Seq.of());
+        } else {
+          let _1_newAcc = ((((laps)[_dafny.ZERO]).dtor_selected) ? ((acc).plus(((laps)[_dafny.ZERO]).dtor_duration)) : (acc));
+          _0___accumulator = _dafny.Seq.Concat(_0___accumulator, _dafny.Seq.of(_1_newAcc));
+          let _in0 = (laps).slice(_dafny.ONE);
+          let _in1 = _1_newAcc;
+          laps = _in0;
+          acc = _in1;
+          continue TAIL_CALL_START;
+        }
+      }
+    };
+    static RunningTotals(laps) {
+      return TalkTimer.__default.RunningTotalsHelper(laps, _dafny.ZERO);
+    };
     static LapHasTag(lap, tag) {
       return _dafny.Seq.contains((lap).dtor_tags, tag);
     };
@@ -2154,6 +2173,9 @@ let AppCore = (function() {
     };
     static CollectAllSections(laps) {
       return TalkTimer.__default.CollectAllSections(laps);
+    };
+    static RunningTotals(laps) {
+      return TalkTimer.__default.RunningTotals(laps);
     };
     static Step(m, a) {
       return TalkTimer.__default.Normalize(TalkTimer.__default.Apply(m, a));

@@ -278,6 +278,13 @@
   white-space: nowrap;
 }
 
+.running-total {
+  color: #6b7280;
+  font-size: 0.75rem;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
 .diff-plus {
   color: #10b981;
 }

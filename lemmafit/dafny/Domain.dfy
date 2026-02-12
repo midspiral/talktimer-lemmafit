@@ -616,6 +616,75 @@ module TalkTimer refines Domain {
   }
 
   //----------------------------------------------------------------------
+  // Running Totals (prefix sums of selected lap durations)
+  //----------------------------------------------------------------------
+
+  // Helper: compute running totals with an accumulator
+  function RunningTotalsHelper(laps: seq<Lap>, acc: int): seq<int>
+    ensures |RunningTotalsHelper(laps, acc)| == |laps|
+  {
+    if |laps| == 0 then []
+    else
+      var newAcc := if laps[0].selected then acc + laps[0].duration else acc;
+      [newAcc] + RunningTotalsHelper(laps[1..], newAcc)
+  }
+
+  // Compute running totals: RunningTotals(laps)[i] = sum of selected durations in laps[..i+1]
+  function RunningTotals(laps: seq<Lap>): seq<int>
+    ensures |RunningTotals(laps)| == |laps|
+  {
+    RunningTotalsHelper(laps, 0)
+  }
+
+  // [verified] Running totals length equals laps length
+  lemma RunningTotalsLength(laps: seq<Lap>)
+    ensures |RunningTotals(laps)| == |laps|
+  {}
+
+  // [verified] Last running total equals selected total
+  lemma RunningTotalsFinalEqualsSelectedTotal(laps: seq<Lap>)
+    requires |laps| > 0
+    ensures RunningTotals(laps)[|laps| - 1] == SelectedTotal(laps)
+  {
+    RunningTotalsHelperFinalEqualsSelectedTotal(laps, 0);
+  }
+
+  // Helper lemma: final element of RunningTotalsHelper equals acc + SelectedTotal
+  lemma RunningTotalsHelperFinalEqualsSelectedTotal(laps: seq<Lap>, acc: int)
+    requires |laps| > 0
+    ensures RunningTotalsHelper(laps, acc)[|laps| - 1] == acc + SelectedTotal(laps)
+  {
+    var newAcc := if laps[0].selected then acc + laps[0].duration else acc;
+    if |laps| == 1 {
+      assert laps[1..] == [];
+      assert RunningTotalsHelper(laps, acc) == [newAcc];
+      assert SelectedDurations(laps[1..]) == [];
+    } else {
+      RunningTotalsHelperFinalEqualsSelectedTotal(laps[1..], newAcc);
+    }
+  }
+
+  // [verified] Running totals are non-negative when all durations are non-negative
+  lemma RunningTotalsNonNegative(laps: seq<Lap>)
+    requires LapsValid(laps)
+    ensures forall i | 0 <= i < |RunningTotals(laps)| :: RunningTotals(laps)[i] >= 0
+  {
+    RunningTotalsHelperNonNegative(laps, 0);
+  }
+
+  lemma RunningTotalsHelperNonNegative(laps: seq<Lap>, acc: int)
+    requires LapsValid(laps)
+    requires acc >= 0
+    ensures forall i | 0 <= i < |RunningTotalsHelper(laps, acc)| :: RunningTotalsHelper(laps, acc)[i] >= 0
+  {
+    if |laps| == 0 {
+    } else {
+      var newAcc := if laps[0].selected then acc + laps[0].duration else acc;
+      RunningTotalsHelperNonNegative(laps[1..], newAcc);
+    }
+  }
+
+  //----------------------------------------------------------------------
   // Tag Total Helpers
   //----------------------------------------------------------------------
 
@@ -1088,5 +1157,9 @@ module AppCore refines Kernel {
 
   function CollectAllSections(laps: seq<D.Lap>): seq<string> {
     D.CollectAllSections(laps)
+  }
+
+  function RunningTotals(laps: seq<D.Lap>): seq<int> {
+    D.RunningTotals(laps)
   }
 }

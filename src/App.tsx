@@ -389,6 +389,7 @@ function App() {
   const selectedCount = getSelectedCount(model.laps)
   const tagTotals = getTagTotals(model.laps)
   const sectionStats = getSectionStats(model.laps)
+  const runningTotals = Api.RunningTotals(model.laps)
 
   // Copy markdown to clipboard
   const copyMarkdown = async () => {
@@ -519,6 +520,10 @@ function App() {
                     <span className="expected-duration">
                       (was {formatTime(lap.expectedDuration)}, <span className={lap.duration >= lap.expectedDuration ? 'diff-plus' : 'diff-minus'}>{lap.duration >= lap.expectedDuration ? '+' : '-'}{formatTime(Math.abs(lap.duration - lap.expectedDuration))}</span>)
                     </span>
+                  )}
+
+                  {lap.selected && (
+                    <span className="running-total">({formatTime(runningTotals[idx])})</span>
                   )}
 
                   {isEditingSection ? (

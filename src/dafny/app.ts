@@ -465,6 +465,7 @@ const App = {
   MinBySection: (laps: Lap[], section: string) => toNumber(AppCore.__default.MinBySection(_dafny.Seq.of(...(laps || []).map((x: any) => lapFromJson(x))), _dafny.Seq.UnicodeFromString(section))),
   MaxBySection: (laps: Lap[], section: string) => toNumber(AppCore.__default.MaxBySection(_dafny.Seq.of(...(laps || []).map((x: any) => lapFromJson(x))), _dafny.Seq.UnicodeFromString(section))),
   CollectAllSections: (laps: Lap[]) => seqToArray(AppCore.__default.CollectAllSections(_dafny.Seq.of(...(laps || []).map((x: any) => lapFromJson(x))))).map(x => dafnyStringToJs(x)),
+  RunningTotals: (laps: Lap[]) => seqToArray(AppCore.__default.RunningTotals(_dafny.Seq.of(...(laps || []).map((x: any) => lapFromJson(x))))).map(x => toNumber(x)),
   Step: (m: DafnyModel, a: DafnyAction) => AppCore.__default.Step(m, a),
   InitHistory: () => AppCore.__default.InitHistory(),
   Do: (h: DafnyHistory, a: DafnyAction) => AppCore.__default.Do(h, a),
