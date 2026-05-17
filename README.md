@@ -1,3 +1,3 @@
 # Verified Talk Timer App
 
-A lemmafit project using Dafny and React.
+A [lemmafit](https://github.com/midspiral/lemmafit) project using Dafny and React.
