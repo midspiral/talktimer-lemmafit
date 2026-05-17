@@ -25,6 +25,9 @@ jobs:
       - name: Clone lemmafit
         run: git clone https://github.com/midspiral/lemmafit.git ../lemmafit
 
+      - name: Install lemmafit dependencies
+        run: cd ../lemmafit && npm install
+
       - name: Install dependencies
         run: npm install
 
