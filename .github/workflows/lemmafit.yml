@@ -1,0 +1,48 @@
+name: Dafny
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  dafny:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Clone lemmafit
+        run: git clone https://github.com/midspiral/lemmafit.git ../lemmafit
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Typecheck
+        run: npx tsc --noEmit
+
+      - name: Build single-file UI
+        run: npm run build
+
+      - name: Verify and compile Dafny (lemmafit-daemon --once)
+        run: npx lemmafit-daemon --once
+
+      - name: Check generated files are up to date
+        run: |
+          git diff --exit-code -- 'generated/' 'src/dafny/Domain.cjs'
+          untracked=$(git ls-files --others --exclude-standard -- 'generated/' 'src/dafny/Domain.cjs')
+          if [ -n "$untracked" ]; then
+            echo "ERROR: Untracked generated files:"
+            echo "$untracked"
+            exit 1
+          fi
